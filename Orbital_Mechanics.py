@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
 eta = 0.2
 md = 260
-M = 1300
+
+M = 1700
+Mi=M
 Isp = 342
 g0 = 9.80665
 Sro = -5
@@ -131,7 +133,7 @@ for i in range(10):   #10 debris
         
     print(f'delta-V {i+1}: {D_Vtot}')                         # total delta V for all debris and all manoeuvres
 
-fuel_mass = 2100 - 2100/(np.exp(D_Vtot/(Isp*g0)))
+fuel_mass = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
 print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
 #----------------------Run optimization------------------------------
 #valid_Ts, deltaVs, valid_v = OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp)
