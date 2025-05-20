@@ -3,16 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Constants
-#Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts
+#Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
 eta = 0.2
 md = 260
-M = 4000
+M = 1300
 Isp = 342
 g0 = 9.80665
 Sro = -5
-Vros = np.linspace(0, 5, 1000)   # Wider range for Vro
-t = np.linspace(0.1, 20, 500) 
-T =465   # Time vector (start from 0.1 to avoid log(0))
+Vros = np.linspace(0, 3, 100)   # Wider range for Vro
+t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
+T = 465  
 
 
 # Function to compute debris delta-V
@@ -98,15 +98,17 @@ V_trans = velocity for transfer to next debris'''
 Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)
 D_Vtot =0
 print(Vro)
+Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
+Vm = Vd-Vro
+
 #calc delta V 
 
-for i in range(10):
+for i in range(10):   #10 debris 
 
     D_Vbdtot= 0
     Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
-    Vm = Vd-Vro
 
-    b =0
+    b = 0                                                                    
     while D_Vbdtot <= 60.58:                                                 #stop the while loop when delta V applied to debris is enough to deorbit
         b +=1                                                                #number of rdv per debris
         Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro with new mass
@@ -123,11 +125,14 @@ for i in range(10):
         M = M - t_under_5*465/(Isp*g0) - M + M/(np.exp(D_Vm/(Isp*g0)))       # update mass by taking the 2 burns into account (shooting+rdv)
     print(f'number of rdv for debris{i+1}: {b}')
     if i < 9:                                                                #not take extra transfer into account for last debris (EOL)
-        V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro           #add transfer velocity to rdv with new debris 
+        V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro               #add transfer velocity to rdv with new debris 
         D_Vtot = D_Vtot + V_trans
-    print(D_Vtot)                                                            # total delta V for all debris and all manoeuvres
+        M = M- M + M/(np.exp(V_trans/(Isp*g0)))   
+        
+    print(f'delta-V {i+1}: {D_Vtot}')                         # total delta V for all debris and all manoeuvres
 
-   
+fuel_mass = 2100 - 2100/(np.exp(D_Vtot/(Isp*g0)))
+print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
 #----------------------Run optimization------------------------------
 #valid_Ts, deltaVs, valid_v = OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp)
 '''
