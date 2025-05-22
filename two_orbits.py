@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 eta = 0.2
 md = 260
 
-M = 1145
+M = 1144
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -136,12 +136,13 @@ for i in range(10):   #10 debris
         Vm = Vm + D_Vbm                                                      #update our velocity after momentum transfer                                          
         D_Vm = twoorbit(Vd,Vm)                                               #see function explanation above
         Vm -= D_Vm                                                           #update our spacecraft velocity
-        M = M - t_under_5*465/(Isp*g0) - M + M/(np.exp(D_Vm/(Isp*g0)))       #update mass
+        M = M - t_under_5*465/(Isp*g0)                                       #update mass
+        M = M - M + M/(np.exp(D_Vm/(Isp*g0)))
         Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro
         D_V_corr = (Vd-Vm) - Vro                                             #correction to achieve desired relative velocity
         Vm += D_V_corr                                                       #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr)
-        M = M - M + M/(np.exp(D_V_corr/(Isp*g0))) 
+        M = M - M + M/(np.exp(np.abs(D_V_corr)/(Isp*g0))) 
 
 
     
@@ -149,7 +150,7 @@ for i in range(10):   #10 debris
     if i < 9:                                                                #not take extra transfer into account for last debris (EOL)
         V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro               #add transfer velocity to rdv with new debris 
         D_Vtot = D_Vtot + V_trans
-        M = M- M + M/(np.exp(V_trans/(Isp*g0)))   
+        M = M - M + M/(np.exp(V_trans/(Isp*g0)))   
         
     print(f'delta-V {i+1}: {D_Vtot}')                         # total delta V for all debris and all manoeuvres
 
