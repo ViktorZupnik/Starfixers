@@ -156,6 +156,8 @@ for i in range(10):   #10 debris
 
 fuel_mass = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
 print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
+
+
 #----------------------Run optimization------------------------------
 #valid_Ts, deltaVs, valid_v = OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp)
 '''
