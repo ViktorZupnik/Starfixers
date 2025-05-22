@@ -168,13 +168,14 @@ def plot_topview(deptwidth, D):
     fig, ax = plt.subplots(figsize=(6, 6))
 
     # Plot the square
-    ax.plot(square_x, square_y, 'b-', linewidth=3, label='Satellite Boundary')
+    ax.plot(square_x, square_y, 'g-', linewidth=3, label='Satellite Boundary')
 
     # Plot the circles and their centers
     for i, (x, y) in enumerate(center_points):
         label = 'Propellant Tank' if i == 0 else None
-        circle = plt.Circle((x, y), D/2, edgecolor='green', facecolor='none', linewidth=2, label=label)
+        circle = plt.Circle((x, y), D/2, edgecolor='blue', facecolor='skyblue', alpha=0.5, linewidth=2, label=label)
         ax.add_patch(circle)
+        ax.plot(x, y, 'ro') 
 
     # Axes settings
     ax.axhline(0, color='gray', linestyle='--')
@@ -188,6 +189,69 @@ def plot_topview(deptwidth, D):
     ax.set_xlim(-half - buffer, half + buffer)
     ax.set_ylim(-half - buffer, half + buffer)
     ax.legend(loc='upper right')
+    plt.show()
+
+def plot_side_view(D, H, depthwidth):
+    # Convert meters to millimeters
+    r = D / 2
+    h_cylinder = H - D  # height of the cylindrical section
+
+    # Centering shifts
+    y_shift = - (H - D) / 2
+
+    def draw_tank(x_shift):
+        # Cylinder rectangle (shifted)
+        cyl_x = [-r, r, r, -r, -r]
+        cyl_x = [x + x_shift for x in cyl_x]
+        cyl_y = [0, 0, h_cylinder, h_cylinder, 0]
+        cyl_y = [y + y_shift for y in cyl_y]
+
+        # Top hemisphere
+        theta_top = np.linspace(0, np.pi, 100)
+        top_x = r * np.cos(theta_top) + x_shift
+        top_y = h_cylinder + r * np.sin(theta_top) + y_shift
+
+        # Bottom hemisphere
+        theta_bot = np.linspace(np.pi, 2*np.pi, 100)
+        bot_x = r * np.cos(theta_bot) + x_shift
+        bot_y = r * np.sin(theta_bot) + y_shift
+
+        # Draw tank
+        plt.plot(cyl_x, cyl_y, 'b-', linewidth=2)
+        plt.plot(top_x, top_y, 'b-', linewidth=2)
+        plt.plot(bot_x, bot_y, 'b-', linewidth=2)
+
+        # Fill tank
+        plt.fill_between(cyl_x[:2], cyl_y[:2], cyl_y[2], color='skyblue', alpha=0.5)
+        plt.fill_between(top_x, h_cylinder + y_shift, top_y, color='skyblue', alpha=0.5)
+        plt.fill_between(bot_x, y_shift, bot_y, color='skyblue', alpha=0.5)
+
+    # Create figure
+    plt.figure(figsize=(6, 8))
+
+    # Draw satellite frame (rectangle)
+    sat_x = [-depthwidth / 2, depthwidth / 2, depthwidth / 2, -depthwidth / 2, -depthwidth / 2]
+    sat_y = [-H / 2, -H / 2, H / 2, H / 2, -H / 2]
+    plt.plot(sat_x, sat_y, linewidth=2, label='Satellite Structure', color='green')
+
+    # Draw both tanks
+    x_offset = depthwidth / 2 - D / 2
+    draw_tank(+x_offset)
+    draw_tank(-x_offset)
+
+    # Formatting
+    plt.gca().set_aspect('equal')
+    plt.title('Side View: Quad Propellant Tanks in Satellite')
+    plt.xlabel('Width (m)')
+    plt.ylabel('Height (m)')
+    plt.grid(True)
+    plt.legend()
+
+    # Centered axis limits
+    total_width = depthwidth * 1.2
+    plt.xlim(-total_width / 2, total_width / 2)
+    plt.ylim(-H / 2 - r * 0.5, H / 2 + r * 0.5)
+
     plt.show()
 
 if __name__ == "__main__":
@@ -212,6 +276,7 @@ if __name__ == "__main__":
     print(f"Cube side: {depthwidth:.3f} m")
 
     plot_topview(depthwidth, diameter)
+    plot_side_view(diameter, height, depthwidth)
 
 
 
