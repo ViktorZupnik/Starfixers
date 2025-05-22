@@ -137,10 +137,11 @@ for i in range(10):   #10 debris
         D_Vm = twoorbit(Vd,Vm)                                               #see function explanation above
         Vm -= D_Vm                                                           #update our spacecraft velocity
         M = M - t_under_5*465/(Isp*g0) - M + M/(np.exp(D_Vm/(Isp*g0)))       #update mass
-        Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     
-        D_V_corr = (Vd-Vm) - Vro
-        Vm += D_V_corr
+        Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro
+        D_V_corr = (Vd-Vm) - Vro                                             #correction to achieve desired relative velocity
+        Vm += D_V_corr                                                       #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr)
+        M = M - M + M/(np.exp(D_V_corr/(Isp*g0))) 
 
 
     
