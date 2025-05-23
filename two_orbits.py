@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 eta = 0.2
 md = 260
 
-M = 1144
+M = 1245
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -133,24 +133,23 @@ for i in range(10):   #10 debris
         Vd = Vd - D_Vbd  
         D_Vbdtot += D_Vbd                                                    #update total debris velocity change
         D_Vbm = Isp*g0*np.log(M/(M-t_under_5*465/(Isp*g0)))                  #Delta V applied to ourselves during burn
-        Vm = Vm + D_Vbm                                                      #update our velocity after momentum transfer                                          
+        Vm = Vm + D_Vbm                                          #update our spacecraft velocity
+        M = M/(np.exp(D_Vbm/(Isp*g0)))                                             #update our velocity after momentum transfer                                          
         D_Vm = twoorbit(Vd,Vm)                                               #see function explanation above
-        Vm -= D_Vm                                                           #update our spacecraft velocity
-        M = M - t_under_5*465/(Isp*g0)                                       #update mass
-        M = M - M + M/(np.exp(D_Vm/(Isp*g0)))
+        Vm -= D_Vm                                                                #update mass
+        M = M/(np.exp(D_Vm/(Isp*g0)))
         Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro
         D_V_corr = (Vd-Vm) - Vro                                             #correction to achieve desired relative velocity
         Vm += D_V_corr                                                       #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr)
-        M = M - M + M/(np.exp(np.abs(D_V_corr)/(Isp*g0))) 
-
-
+        M = M/(np.exp(np.abs(D_V_corr)/(Isp*g0))) 
     
     print(f'number of rdv for debris{i+1}: {b}')
     if i < 9:                                                                #not take extra transfer into account for last debris (EOL)
-        V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro               #add transfer velocity to rdv with new debris 
-        D_Vtot = D_Vtot + V_trans
-        M = M - M + M/(np.exp(V_trans/(Isp*g0)))   
+        D_V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro
+        Vm += D_V_trans              #add transfer velocity to rdv with new debris 
+        D_Vtot = D_Vtot + np.abs(D_V_trans)
+        M = M/(np.exp(D_V_trans/(Isp*g0)))   
         
     print(f'delta-V {i+1}: {D_Vtot}')                         # total delta V for all debris and all manoeuvres
 
