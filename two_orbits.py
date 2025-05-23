@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 eta = 0.2
 md = 260
 
-M = 1245
+M = 1247
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -97,7 +97,7 @@ D_Vm = delta V for next rendez vous
 D_Vtot =  total delta V required, taking into account delta V for next rdv and delta V applied during rdv
 V_trans = velocity for transfer to next debris'''
 
-Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)
+Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
 D_Vtot =0
 print(Vro)
 Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
@@ -126,19 +126,19 @@ for i in range(10):   #10 debris
     b = 0                                                                    
     while D_Vbdtot <= 60.58:                                                 #stop the while loop when delta V applied to debris is enough to deorbit
         b +=1                                                                #number of rdv per debris
-        Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro with new mass
-        srt = sr(t, 465, eta, md, M, Sro, Vro, Isp)
+        Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)                     #update Vro with new mass
+        srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
         t_under_5 = TimeUnder5m(srt, t)                                      #update time between 2-5m
-        D_Vbd = 465 * eta *t_under_5/md                                      #Delta V applied to debris for this rdv
+        D_Vbd = T * eta *t_under_5/md                                      #Delta V applied to debris for this rdv
         Vd = Vd - D_Vbd  
         D_Vbdtot += D_Vbd                                                    #update total debris velocity change
-        D_Vbm = Isp*g0*np.log(M/(M-t_under_5*465/(Isp*g0)))                  #Delta V applied to ourselves during burn
+        D_Vbm = Isp*g0*np.log(M/(M-t_under_5*T/(Isp*g0)))                  #Delta V applied to ourselves during burn
         Vm = Vm + D_Vbm                                          #update our spacecraft velocity
         M = M/(np.exp(D_Vbm/(Isp*g0)))                                             #update our velocity after momentum transfer                                          
         D_Vm = twoorbit(Vd,Vm)                                               #see function explanation above
         Vm -= D_Vm                                                                #update mass
         M = M/(np.exp(D_Vm/(Isp*g0)))
-        Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro
+        Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)                     #update Vro
         D_V_corr = (Vd-Vm) - Vro                                             #correction to achieve desired relative velocity
         Vm += D_V_corr                                                       #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr)
