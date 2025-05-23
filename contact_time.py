@@ -12,6 +12,7 @@ g0 = 9.81  # Gravitational acceleration at sea level in m/s^2
 # Input parameters
 DV = -0.002  # Delta V in km/s applied to the spacecraft
 theta_iterate = np.arange(-1, 1, 0.0001) # Range of angles in degrees to optimize contact time for
+theta_iterate = [0, -0.2856000000000787]
 results = []
 
 for theta_deg in theta_iterate:
@@ -64,7 +65,7 @@ for theta_deg in theta_iterate:
     dist = np.sqrt((x_target - x_spacecraft)**2 + (y_target - y_spacecraft)**2)
 
     # Find when they're within 2 km
-    close_indices = np.where(dist <= 2)[0]
+    close_indices = np.where(dist <= 10)[0]
     if len(close_indices) == 0:
         continue  # No contact time found
     time_of_crossing = t[close_indices]
@@ -76,13 +77,13 @@ for theta_deg in theta_iterate:
 results = sorted(results, key=lambda x: x[1], reverse=True)
 print("Best contact time found:")
 for theta, contact_time, final_dist in results:
-    print(f"Theta: {theta} rad, Contact Time: {contact_time:} s, Final Distance: {final_dist} km")
+    print(f"Theta: {theta} deg, Contact Time: {contact_time:} s, Final Distance: {final_dist} km")
 
 
 def plot_distance(t, dist):
     plt.figure(figsize=(10, 8))
     plt.plot(t, dist, label='Distance between spacecraft and target')
-    plt.axhline(y=2, color='r', linestyle='--', label='2 km threshold')
+    plt.axhline(y=10, color='r', linestyle='--', label='10 km threshold')
     plt.title('Distance between Spacecraft and Target Over Time')
     plt.show()
 
@@ -102,3 +103,4 @@ def plot_orbits(x_t, y_t, x_s, y_s, x_e, y_e):
     plt.show()
 
 plot_orbits(x_t, y_t, x_s, y_s, x_e, y_e)
+plot_distance(t, dist)
