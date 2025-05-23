@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 # Input
 h = 600
 inclination = np.radians(53)
-solar_longitude_plot = np.radians(125.66)
+solar_longitude_plot = np.radians(123.48)
 
 # Constants
 R_e = 6371
@@ -121,7 +121,7 @@ def compute_shadow_time(R, R_e, mu, inclination, obliquity, shadow_length, solar
     return t_shadow, T
 
 # Solar longitudes from 0 to 2π
-longitudes = np.linspace(0, 2 * np.pi, 720)
+longitudes = np.linspace(0, 2 * np.pi, 3600)
 
 shadow_times = []
 
