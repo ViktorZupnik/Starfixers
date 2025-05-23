@@ -259,7 +259,7 @@ if __name__ == "__main__":
     R = 0.5  # D/H ratio, choose yourself
     capacity = 129.920007  # in L, input the necessary tank capacity
     t = 0.002  # in m, input the necessary tank thickness
-    rho = 4430  # in kg/m^3, input the necessary tank material density
+    rho = 4430  # in kg/m^3, input the necessary tank material density; 4430 for ti6al4v
     L = 0.312 # in m, input the free space length
 
     # Things that are calculated
@@ -269,11 +269,11 @@ if __name__ == "__main__":
     mass = calculate_mass(diameter, height, rho, t)  # in kg
     depthwidth = calculate_bottom_surface_side(diameter, L)  # in m
 
-    print(f"Diameter: {diameter:.3f} m")
-    print(f"Height: {height:.3f} m")
-    print(f"Mass: {mass:.3f} kg")
+    print(f"Diameter prop tank: {diameter:.3f} m")
+    print(f"Height satellite/prop tank: {height:.3f} m")
+    print(f"Mass prop tank from geometry of shell: {mass:.3f} kg")
     print(f"Mass of the tank from statistics: {mass_stat:.3f} kg")
-    print(f"Cube side: {depthwidth:.3f} m")
+    print(f"Depth width satellite: {depthwidth:.3f} m")
 
     plot_topview(depthwidth, diameter)
     plot_side_view(diameter, height, depthwidth)
