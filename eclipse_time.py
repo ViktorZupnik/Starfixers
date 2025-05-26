@@ -133,6 +133,7 @@ max_shadow_time = np.max(shadow_times)
 
 print(f"Max shadow time: {max_shadow_time:.2f} seconds")
 print(f"Max shadow time occurs at solar longitude: {max_shadow_time_longitude*90:.2f} degrees")
+print(T)
 plt.plot(longitudes, shadow_times)
 plt.xlabel("Solar Longitude (radians)")
 plt.ylabel("Eclipse Time (seconds)")

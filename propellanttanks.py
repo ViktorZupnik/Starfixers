@@ -4,7 +4,7 @@ from scipy.optimize import fsolve
 import matplotlib.patches as patches
 
 
-def calculate_tank_volume(tank_capacity, plot=False):
+def calculate_tank_volume(tank_capacity, plot=True):
     """
     Calculate the tank volume based on the tank capacity using linear regression in L.
     """
@@ -32,9 +32,9 @@ def calculate_tank_volume(tank_capacity, plot=False):
         plt.text(0.05, 0.95, eq_text, transform=plt.gca().transAxes,
                 fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 
-        plt.xlabel('Tank capacity')
-        plt.ylabel('Tank volume')
-        plt.title('Linear Regression')
+        plt.xlabel('Tank capacity (L)')
+        plt.ylabel('Tank volume (L)')
+        plt.title('Tank Volume vs Capacity')
         plt.legend()
         plt.grid(True)
         plt.show()
@@ -130,7 +130,7 @@ def plot_tank(D_m, H_m):
 
     # Set axis properties
     plt.gca().set_aspect('equal')
-    plt.title('Propellant Tank Side View (Centered)')
+    plt.title('Propellant Tank Side View')
     plt.xlabel('Width (mm)')
     plt.ylabel('Height (mm)')
     plt.grid(True)
@@ -151,7 +151,7 @@ def calculate_mass(D, H, rho, t):
 def calculate_bottom_surface_side(D, L):
     return (D + L) * np.sqrt(2) / 2 + D
 
-def plot_topview(deptwidth, D):
+def plot_topview(deptwidth, D, L):
     half = deptwidth / 2
     square_x = [-half, half, half, -half, -half]
     square_y = [-half, -half, half, half, -half]
@@ -167,15 +167,29 @@ def plot_topview(deptwidth, D):
     # Create one figure and axes
     fig, ax = plt.subplots(figsize=(6, 6))
 
-    # Plot the square
+    # Plot the outer square (satellite boundary)
     ax.plot(square_x, square_y, 'g-', linewidth=3, label='Satellite Boundary')
 
-    # Plot the circles and their centers
+    # Plot the propellant tanks
     for i, (x, y) in enumerate(center_points):
         label = 'Propellant Tank' if i == 0 else None
         circle = plt.Circle((x, y), D/2, edgecolor='blue', facecolor='skyblue', alpha=0.5, linewidth=2, label=label)
         ax.add_patch(circle)
-        ax.plot(x, y, 'ro') 
+        ax.plot(x, y, 'ro')  # Center of the circle
+
+    # Plot the diagonal square representing free space
+    l_half = L / 2  # Half diagonal side in axis-aligned coordinates
+    diag_square_x = [-l_half, l_half, l_half, -l_half, -l_half]
+    diag_square_y = [-l_half, -l_half, l_half, l_half, -l_half]
+
+    # Rotate the square 45 degrees to make it diagonal
+    angle = np.radians(45)
+    cos_a, sin_a = np.cos(angle), np.sin(angle)
+    rotated_x = [cos_a * x - sin_a * y for x, y in zip(diag_square_x, diag_square_y)]
+    rotated_y = [sin_a * x + cos_a * y for x, y in zip(diag_square_x, diag_square_y)]
+
+    ax.plot(rotated_x + [rotated_x[0]], rotated_y + [rotated_y[0]], 'orange', linewidth=2, label='Free Space')
+    ax.fill(rotated_x, rotated_y, color='orange', alpha=0.3)
 
     # Axes settings
     ax.axhline(0, color='gray', linestyle='--')
@@ -275,7 +289,7 @@ if __name__ == "__main__":
     print(f"Mass of the tank from statistics: {mass_stat:.3f} kg")
     print(f"Depth width satellite: {depthwidth:.3f} m")
 
-    plot_topview(depthwidth, diameter)
+    plot_topview(depthwidth, diameter, L)
     plot_side_view(diameter, height, depthwidth)
 
 
