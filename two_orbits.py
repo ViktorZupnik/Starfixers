@@ -99,15 +99,13 @@ D_Vm = delta V for next rendez vous
 D_Vtot =  total delta V required, taking into account delta V for next rdv and delta V applied during rdv
 V_trans = velocity for transfer to next debris'''
 
-# Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
-
-# print(Vro)
 Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
 Vro = OptVro(t, T, eta, md[0], M, Sro, Vros, Isp) 
 Vm = Vd - Vro
-D_Vtot = Vro
+D_Vtot = np.abs(Vro)
+M = M/(np.exp(np.abs(Vro)/(Isp*g0)))
 mu = 3.986*10**14 #in SI units
-#calc delta V 
+
 #find delta V required to meet after two orbits
 def twoorbit(Vd, Vm):                    
     ad = 1/(2/(600000+6371000)-Vd**2/mu)                          #calculate new semi major axis of debris
@@ -156,9 +154,10 @@ for i in range(10):   #10 debris
         M = M/(np.exp(np.abs(D_Vm)/(Isp*g0)))                                          #update mass
         Vro = OptVro(t, T, eta, md[i], M, Sro, Vros, Isp)                      #update Vro
         D_V_corr2 = (Vd-Vm) - Vro                                              #correction to achieve desired relative velocity
-        Vm += D_V_corr2                                                        #update Vm again to prepare for new momentum transfer
+        Vm += D_V_corr2 
+        M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0)))                             #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr2)
-        M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0))) 
+        
     bs += b
 
     #print(f'number of rdv for debris{i+1}: {b}')
