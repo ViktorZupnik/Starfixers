@@ -79,6 +79,7 @@ D_Vbd = The burn delta V applied to the debris after each burn
 D_Vbdtot = total delta V applied to debris after X rendezvous
 D_Vbm = change of delta V applied to ourselves after a burn 
 D_Vm = delta V for next rendez vous
+D_V_corr = correct for desired Vro
 D_Vtot =  total delta V required, taking into account delta V for next rdv and delta V applied during rdv
 V_trans = velocity for transfer to next debris'''
 
