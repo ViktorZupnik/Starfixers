@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
 eta = 0.2
-md = np.linspace(250, 500, 10)
+md = np.linspace(260,260, 10)
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
-M = 1700 
+M = 1200 
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -99,11 +99,13 @@ D_Vm = delta V for next rendez vous
 D_Vtot =  total delta V required, taking into account delta V for next rdv and delta V applied during rdv
 V_trans = velocity for transfer to next debris'''
 
-Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
-D_Vtot =0
-print(Vro)
+# Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
+
+# print(Vro)
 Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
-Vm = Vd-Vro
+Vro = OptVro(t, T, eta, md[0], M, Sro, Vros, Isp) 
+Vm = Vd - Vro
+D_Vtot = Vro
 mu = 3.986*10**14 #in SI units
 #calc delta V 
 #find delta V required to meet after two orbits
@@ -129,37 +131,44 @@ bs = 0
 for i in range(10):   #10 debris 
 
     D_Vbdtot= 0
-    Vd = np.sqrt(mu/((600+6371)*1000))                                       #debris velocity in circular orbit
+    Vd = np.sqrt(mu/((600+6371)*1000))   
+                              #debris velocity in circular orbit
     if i == 0:
         print (SmaandE(Vm))
     b = 0                                                                   
-    while D_Vbdtot <= 60.58:                                                 #stop the while loop when delta V applied to debris is enough to deorbit
-        b +=1                                                                #number of rdv per debris
-        Vro = OptVro(t, T, eta, md[i], M, Sro, Vros, Isp)                     #update Vro with new mass
+    while D_Vbdtot <= 60.58:                                                   #stop the while loop when delta V applied to debris is enough to deorbit
+        b +=1                                                                  #number of rdv per debris
+        Vro = OptVro(t, T, eta, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
         srt = sr(t, T, eta, md[i], M, Sro, Vro, Isp)
-        t_under_5 = TimeUnder5m(srt, t)                                #update time between 2-5m
-        D_Vbd = T * eta *t_under_5/md[i]                                      #Delta V applied to debris for this rdv
+        t_under_5 = TimeUnder5m(srt, t)                                        #update time between 2-5m
+        D_Vbd = T * eta *t_under_5/md[i]                                       #Delta V applied to debris for this rdv
         Vd = Vd - D_Vbd  
-        D_Vbdtot += D_Vbd                                                    #update total debris velocity change
-        D_Vbm = Isp*g0*np.log(M/(M-t_under_5*T/(Isp*g0)))                  #Delta V applied to ourselves during burn
-        Vm = Vm + D_Vbm                                          #update our spacecraft velocity
-        M = M/(np.exp(D_Vbm/(Isp*g0)))                                             #update our velocity after momentum transfer                                          
-        D_Vm = twoorbit(Vd,Vm)                                               #see function explanation above
-        Vm -= D_Vm                                                                #update mass
-        M = M/(np.exp(D_Vm/(Isp*g0)))
-        Vro = OptVro(t, T, eta, md[i], M, Sro, Vros, Isp)                     #update Vro
-        D_V_corr = (Vd-Vm) - Vro                                             #correction to achieve desired relative velocity
-        Vm += D_V_corr                                                       #update Vm again to prepare for new momentum transfer
-        D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr)
-        M = M/(np.exp(np.abs(D_V_corr)/(Isp*g0))) 
+        D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
+        D_Vbm = Isp*g0*np.log(M/(M-t_under_5*T/(Isp*g0)))                      #Delta V applied to ourselves during burn
+        Vm = Vm + D_Vbm                                                        #update our spacecraft velocity
+        M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))                                         #update our mass after momentum transfer   
+
+        #check if it was the last burn 
+        if D_Vbdtot >= 60.58:
+           break                                      
+        D_Vm = twoorbit(Vd,Vm)                                                 #see function explanation above
+        Vm -= D_Vm                                                             #update velocity
+        M = M/(np.exp(np.abs(D_Vm)/(Isp*g0)))                                          #update mass
+        Vro = OptVro(t, T, eta, md[i], M, Sro, Vros, Isp)                      #update Vro
+        D_V_corr2 = (Vd-Vm) - Vro                                              #correction to achieve desired relative velocity
+        Vm += D_V_corr2                                                        #update Vm again to prepare for new momentum transfer
+        D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr2)
+        M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0))) 
     bs += b
+
     #print(f'number of rdv for debris{i+1}: {b}')
 
-    if i < 9:                                                                #not take extra transfer into account for last debris (EOL)
+    if i < 9:           
+        Vro = OptVro(t, T, eta, md[i], M, Sro, Vros, Isp)                                                             #not take extra transfer into account for last debris (EOL)
         D_V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro
         Vm += D_V_trans              #add transfer velocity to rdv with new debris 
         D_Vtot = D_Vtot + np.abs(D_V_trans)
-        M = M/(np.exp(D_V_trans/(Isp*g0)))  
+        M = M/(np.exp(np.abs(D_V_trans)/(Isp*g0)))  
      
         
     print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres
