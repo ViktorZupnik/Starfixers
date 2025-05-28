@@ -6,13 +6,14 @@ import matplotlib.pyplot as plt
 
 eta = 0.2
 md = np.linspace(260,260, 10)
-#520kg debris, 1340kg fuel, 470kg dry
-#260kg debris, 778kg fuel, 470kg dry
-h = np.linspace(600,600,10)
+
+#h = [630,630,630,630,630,550,550,550,550,550]
+h = [550,550,550,550,550,630,630,630,630,630]
+
 phi = np.linspace(0,360,10)
 debris_array = np.column_stack((h, md, phi))  # shape (10, 3)
 
-M = 1200 
+M = 1500 
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -81,8 +82,8 @@ D_Vm = delta V for next rendez vous
 D_Vtot =  total delta V required, taking into account delta V for next rdv and delta V applied during rdv
 V_trans = velocity for transfer to next debris'''
 
-Vd = np.sqrt(3.986*10**14/((debris_array[0][0]+6371)*1000))
-Vro = OptVro(t, T, eta, debris_array[0][1], M, Sro, Vros, Isp) 
+Vd = np.sqrt(3.986*10**14/((debris_array[0,0]+6371)*1000))
+Vro = OptVro(t, T, eta, debris_array[0,1], M, Sro, Vros, Isp) 
 Vm = Vd - Vro
 D_Vtot = np.abs(Vro)
 M = M/(np.exp(np.abs(Vro)/(Isp*g0)))
@@ -90,13 +91,13 @@ mu = 3.986*10**14 #in SI units
 
 #find delta V required to meet after two orbits
 def twoorbit(Vd, Vm):                    
-    ad = 1/(2/(debris_array[i,0]*1000+6371000)-Vd**2/mu)                          #calculate new semi major axis of debris
+    ad = 1/(2/((debris_array[i,0]*1000)+6371000)-Vd**2/mu)                          #calculate new semi major axis of debris
     Td = 2*np.pi*np.sqrt(ad**3/mu)                          #calculate new orbital period of debris
-    am = 1/(2/(600000+6371000)-Vm**2/mu)                          #calculate new semi major axis of spacecraft
+    am = 1/(2/((debris_array[i,0]*1000)+6371000)-Vm**2/mu)                          #calculate new semi major axis of spacecraft
     Tm = 2*np.pi*np.sqrt(am**3/mu)                          #calculate new orbital period of spacecraft
     T_desired = 2*Td-Tm                                     #Desired new orbital period: debris does two periods in same orbit while we change orbit
     a_desired = ((T_desired/(2*np.pi))**(2/3))*mu**(1/3)    #new semi maor axis of the spacecraft
-    V_desired = np.sqrt(mu*(2/(600000+6371000)-1/a_desired))      #desired velocity at apogee to meet on time
+    V_desired = np.sqrt(mu*(2/((debris_array[i,0]*1000)+6371000)-1/a_desired))      #desired velocity at apogee to meet on time
     dvm = Vm-V_desired                                      #delta V required
    
     return dvm
