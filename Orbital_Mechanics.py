@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 eta = 0.2
 md = 260
 
-M = 1700
+M = 3450
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -99,52 +99,61 @@ V_trans = velocity for transfer to next debris'''
 
 Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)
 D_Vtot =0
-print(Vro)
+#print(Vro)
 Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
 Vm = Vd-Vro
 
 #calc delta V 
+def fuel_mass (Vro,D_Vtot, Vd, Vm, M ):
+    for i in range(10):   #10 debris
 
-for i in range(10):   #10 debris 
+        D_Vbdtot= 0
+        Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
 
-    D_Vbdtot= 0
-    Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
+        b = 0
+        while D_Vbdtot <= 60.58:                                                 #stop the while loop when delta V applied to debris is enough to deorbit
+            b +=1                                                                #number of rdv per debris
+            Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro with new mass
+            srt = sr(t, 465, eta, md, M, Sro, Vro, Isp)
+            t_under_5 = TimeUnder5m(srt, t)                                      #update time between 2-5m
+            D_Vbd = 465 * eta *t_under_5/md                                      #Delta V applied to debris for this rdv
+            Vd = Vd - D_Vbd                                                      #update debris velocity
+            D_Vbdtot += D_Vbd                                                    #update total debris velocity change
+            D_Vbm = Isp*g0*np.log(M/(M-t_under_5*465/(Isp*g0)))                  #Delta V applied to ourselves during burn
+            Vm = Vm + D_Vbm                                                      #update our velocity
+            D_Vm = (Vm-Vd)+Vro                                                   # extra delta V required for next rdv
+            Vm -= D_Vm                                                           #update our velocity (decelerate for next rdv)
+            D_Vtot = D_Vtot + D_Vm + D_Vbm                                       #update Total Delta V required
+            M = M - t_under_5*465/(Isp*g0) - M + M/(np.exp(D_Vm/(Isp*g0)))       # update mass by taking the 2 burns into account (shooting+rdv)
+        #print(f'number of rdv for debris{i+1}: {b}')
+        if i < 9:                                                                #not take extra transfer into account for last debris (EOL)
+            V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro               #add transfer velocity to rdv with new debris
+            D_Vtot = D_Vtot + V_trans
+            M = M- M + M/(np.exp(V_trans/(Isp*g0)))
 
-    b = 0                                                                    
-    while D_Vbdtot <= 60.58:                                                 #stop the while loop when delta V applied to debris is enough to deorbit
-        b +=1                                                                #number of rdv per debris
-        Vro = OptVro(t, 465, eta, md, M, Sro, Vros, Isp)                     #update Vro with new mass
-        srt = sr(t, 465, eta, md, M, Sro, Vro, Isp)
-        t_under_5 = TimeUnder5m(srt, t)                                      #update time between 2-5m
-        D_Vbd = 465 * eta *t_under_5/md                                      #Delta V applied to debris for this rdv
-        Vd = Vd - D_Vbd  
-        '''find new semi major axis + find orbital period''' 
-        ad = 1/(2/600-Vd**2/(3.986*10**14))                                                   #update debris velocity
-        D_Vbdtot += D_Vbd                                                    #update total debris velocity change
-        D_Vbm = Isp*g0*np.log(M/(M-t_under_5*465/(Isp*g0)))                  #Delta V applied to ourselves during burn
-        Vm = Vm + D_Vbm                                                      #update our velocity
-        '''find new semi major axis + find orbital period'''
-        ad = 1/(2/600-Vd**2/(3.986*10**14))   
-        '''find phase shift '''
-        '''find delta V required to catch up''' 
-        '''add Vro required for new rdv'''                                                  
-        D_Vm = (Vm-Vd)+Vro                                                   # extra delta V required for next rdv
-        Vm -= D_Vm                                                           #update our velocity (decelerate for next rdv)
-        D_Vtot = D_Vtot + D_Vm + D_Vbm                                       #update Total Delta V required 
-        M = M - t_under_5*465/(Isp*g0) - M + M/(np.exp(D_Vm/(Isp*g0)))       # update mass by taking the 2 burns into account (shooting+rdv)
-    print(f'number of rdv for debris{i+1}: {b}')
-    if i < 9:                                                                #not take extra transfer into account for last debris (EOL)
-        #update this V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro               #add transfer velocity to rdv with new debris 
-        D_Vtot = D_Vtot + V_trans
-        M = M- M + M/(np.exp(V_trans/(Isp*g0)))   
-        
-    print(f'delta-V {i+1}: {D_Vtot}')                         # total delta V for all debris and all manoeuvres
+        #print(f'delta-V {i+1}: {D_Vtot}')                         # total delta V for all debris and all manoeuvres
 
-fuel_mass = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
-print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
+    fuel_used = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
+    return fuel_used, M, D_Vtot
+fuel_used, M, D_Vtot= fuel_mass(Vro, D_Vtot, Vd, Vm, M)
+print(f'fuel mass:{fuel_used}', f'and dry mass is {M}' , f'while the total Delta-V is {D_Vtot}')
 #----------------------Run optimization------------------------------
 #valid_Ts, deltaVs, valid_v = OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp)
-'''
+'''x=[]
+y=[]
+for i in np.arange(1000, 3000, 200):
+    M_iter = i
+    Vro_iter = OptVro(t, 465, eta, md, M_iter, Sro, Vros, Isp)
+    if Vro_iter is not None:
+        fuel, _, _ = fuel_mass(Vro_iter, D_Vtot, Vd, (Vd - Vro_iter), M_iter)
+        x.append(M_iter)
+        y.append(fuel)
+plt.plot(x,y)
+plt.xlabel('Total mass (kg)')
+plt.ylabel('Fuel masss (kg)')
+plt.title('Total mass - fuel mass relationship')
+plt.grid(True)
+plt.show()
 # Plot
 plt.plot( deltaVs,valid_Ts, marker='o')
 plt.xlabel('Debris ΔV (m/s)')
