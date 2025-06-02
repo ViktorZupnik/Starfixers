@@ -139,6 +139,9 @@ while np.min(D_Vbdtot)<=60.58:
             Vm += D_V_corr2
             M = M / (np.exp(np.abs(D_V_corr2) / (Isp * g0)))  # update Vm again to prepare for new momentum transfer
             D_Vtot += abs(D_Vbm) + abs(D_Vm) + abs(D_V_corr2) # update total ADR velocity change
+            #------------Medium Transfers------------
+
+
         if i==9:
             D_Vtot += abs(D_Vbm)
             #print(D_Vtot)
@@ -148,6 +151,6 @@ while np.min(D_Vbdtot)<=60.58:
     Vm += D_Vtrans  # add transfer velocity to rdv with new debris
     M = M / (np.exp(np.abs(D_Vtrans) / (Isp * g0)))
     D_Vtotal += abs(D_Vtot) + abs(D_Vtrans)
-
+print("Fuel mass: ",Mi-M, " Dry mass: ", M)
 print(D_Vbdtot)
 print(D_Vtotal)
