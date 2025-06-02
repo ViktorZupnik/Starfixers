@@ -151,6 +151,27 @@ while np.min(D_Vbdtot)<=60.58:
     Vm += D_Vtrans  # add transfer velocity to rdv with new debris
     M = M / (np.exp(np.abs(D_Vtrans) / (Isp * g0)))
     D_Vtotal += abs(D_Vtot) + abs(D_Vtrans)
+
 print("Fuel mass: ",Mi-M, " Dry mass: ", M)
 print(D_Vbdtot)
 print(D_Vtotal)
+
+#----------------------------Delta Phi implementation for 1yr req. compliance----------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
