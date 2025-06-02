@@ -189,20 +189,21 @@ for k in range(len(indicess)):
 
             for w in range(j+1,10):
                 i = indicess[k][w]
-                phi_copy[i] = (phi_copy[i] + phi_change(debris_array[i,0],time))%360
-                
+                phi_copy[i] = (phi_copy[i] + phi_change(debris_array[i,0], time))%360
             time = 0
+
             while phi_copy[i+1] > np.abs(catchup_phi(a2, debris_array[i+1,0])):
                 delta_phi = catchup_phi(a2, debris_array[i+1,0])  #calculate phase angle change for next rendezvous
                 phi_copy[i+1]= (phi_copy[i+1] + delta_phi)  #update phase angle for next rendezvous
                 time += period(debris_array[i+1,0], Vma)  #update time after phase angle change
+
             Vc = np.sqrt(mu/((debris_array[i+1,0]+6371)*1000))  #velocity of debris in circular orbit
             max_delta_phi = (period(debris_array[i+1,0], Vc) - period(debris_array[i+1,0], Vc-5))/(period(debris_array[i+1,0], Vc))*360  #(0.7)maximum phase angle change for next rendezvous
             N = 1
             while np.abs(phi_copy[i+1]/N) > np.abs(max_delta_phi):
                 N += 1
             delta_phi = -phi_copy[i+1]/N  #calculate phase angle change for next rendezvous
-            T_adr = delta_phi*period(debris_array[i+1,0], Vc)/360+ period(debris_array[i+1,0], Vc)
+            T_adr = delta_phi*period(debris_array[i+1,0], Vc)/360+ period(debris_array[i+1,0], Vc) ## DOUBLE CHECK THIS LINE
             a_adr = ((T_adr/(2*np.pi))**(2/3))*mu**(1/3)  #semi major axis of our spacecraft after phase angle change
             D_V_trans = np.sqrt(mu*(2/((debris_array[i+1,0]+6371)*1000)-1/a_adr))-Vma  #update Vma for next rendezvous
             D_Vtot += np.abs(D_V_trans)
