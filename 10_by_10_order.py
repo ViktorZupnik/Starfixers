@@ -94,6 +94,7 @@ mu = 3.986*10**14 #in SI units
 D_Vtot = 0
 D_Vbdtot = 10*[0]
 D_Vtotal= 0
+Phi = 36
 #np.array([])
 x=0
 # find delta V required to meet after two orbits
