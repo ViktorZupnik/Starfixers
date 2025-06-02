@@ -1,28 +1,10 @@
 "version 2"
 import numpy as np
 import matplotlib.pyplot as plt
-
+import itertools
 # Constants
-
-eta = 0.2
-md = np.linspace(260,260, 10)
-
-#h = [630,630,630,630,630,550,550,550,550,550]
-h = [550,550,550,550,550,630,630,630,630,630]
-
-phi = np.linspace(0,360,10)
-debris_array = np.column_stack((h, md, phi))  # shape (10, 3)
-
-M = 1500 
-Mi=M
 Isp = 342
-g0 = 9.80665
-Sro = -5
-Vros = np.linspace(0, 3, 100)   # Wider range for Vro
-t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
-T = 465  
-
-
+g0 = 9.80665  # Standard gravity in m/s^2
 # Function to compute debris delta-V
 def DebrisDeltaV(T, eta, t, md):
     return T * eta * t / md
@@ -79,12 +61,12 @@ D_Vbd = The burn delta V applied to the debris after each burn
 D_Vbdtot = total delta V applied to debris after X rendezvous
 D_Vbm = change of delta V applied to ourselves after a burn 
 D_Vm = delta V for next rendez vous
-D_V_corr = correct for desired Vro
 D_Vtot =  total delta V required, taking into account delta V for next rdv and delta V applied during rdv
 V_trans = velocity for transfer to next debris'''
 
 Vd = np.sqrt(3.986*10**14/((debris_array[0,0]+6371)*1000))
-Vro = OptVro(t, T, eta, debris_array[0,1], M, Sro, Vros, Isp) 
+# Vro = OptVro(t, T, eta, debris_array[0,1], M, Sro, Vros, Isp) 
+Vro = 2.5
 Vm = Vd - Vro
 D_Vtot = np.abs(Vro)
 M = M/(np.exp(np.abs(Vro)/(Isp*g0)))
@@ -100,7 +82,7 @@ def twoorbit(Vd, Vm):
     a_desired = ((T_desired/(2*np.pi))**(2/3))*mu**(1/3)    #new semi maor axis of the spacecraft
     V_desired = np.sqrt(mu*(2/((debris_array[i,0]*1000)+6371000)-1/a_desired))      #desired velocity at apogee to meet on time
     dvm = Vm-V_desired                                      #delta V required
-   
+
     return dvm
 
 def SmaandE(vm):
@@ -113,59 +95,90 @@ def dvbtot(h):
     mu = 3.986 * 10**14  # Gravitational parameter for Earth in m^3/s^2
     r0 = (h+6371) * 1000  # Initial radius in meters
     r1 = (381 + 6371) * 1000  # Final radius in meters
-  # Velocity at final radius for elliptical orbit
+# Velocity at final radius for elliptical orbit
     dv = np.sqrt(mu / r0) - np.sqrt((2/r0-1/((r0 + r1) / 2)) * mu)  # Delta V required to change from circular orbit to elliptical orbit'
     return dv
 
 
-bs = 0 
-for i in range(len(debris_array)):   #10 debris 
+eta = 0.2
+md = [250, 250, 250, 250, 250, 500, 500, 500, 500, 500]  # Mass of debris in kg
+h = [600, 600, 600, 600, 600, 600, 600, 600, 600, 600]  # Altitude of debris in km
+phi = np.linspace(0,360,10)
+minimum_dv = 10000000
+sequence = []
+debris_array = np.column_stack((h, md, phi))  # shape (10, 3)
+indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]  # Indices for debris
+indicess = []
+for perm in itertools.permutations(indices):
+    indicess.append(list(perm))
 
-    D_Vbdtot= 0
-    Vd = np.sqrt(mu/((debris_array[i,0]+6371)*1000))                                            #debris velocity in circular orbit
+for k in range(len(indicess)):
+    M = 1494.3 
+    Mi=M
+    Isp = 342
+    g0 = 9.80665
+    Sro = -5
+    Vros = np.linspace(0, 3, 100)   # Wider range for Vro
+    t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
+    T = 465  
 
-    if i == 0:
-        print (SmaandE(Vm))
-    b = 0                                                                   
-    while D_Vbdtot <= dvbtot(debris_array[i,0]):                                                   #stop the while loop when delta V applied to debris is enough to deorbit
-        b +=1                                                                  #number of rdv per debris
-        Vro = OptVro(t, T, eta, debris_array[i,1], M, Sro, Vros, Isp)                      #update Vro with new mass
-        srt = sr(t, T, eta, debris_array[i,1], M, Sro, Vro, Isp)
-        t_under_5 = TimeUnder5m(srt, t)                                        #update time between 2-5m
-        D_Vbd = T * eta *t_under_5/debris_array[i,1]                           #Delta V applied to debris for this rdv
-        Vd = Vd - D_Vbd  
-        D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
-        D_Vbm = Isp*g0*np.log(M/(M-t_under_5*T/(Isp*g0)))                      #Delta V applied to ourselves during burn
-        Vm = Vm + D_Vbm                                                        #update our spacecraft velocity
-        M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))                                         #update our mass after momentum transfer   
-
-        #check if it was the last burn 
-        if D_Vbdtot >= dvbtot(debris_array[i,0]):
-           break                                      
-        D_Vm = twoorbit(Vd,Vm)                                                 #see function explanation above
-        Vm -= D_Vm                                                             #update velocity
-        M = M/(np.exp(np.abs(D_Vm)/(Isp*g0)))                                          #update mass
-        Vro = OptVro(t, T, eta, debris_array[i,1], M, Sro, Vros, Isp)                      #update Vro
-        D_V_corr2 = (Vd-Vm) - Vro                                              #correction to achieve desired relative velocity
-        Vm += D_V_corr2 
-        M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0)))                             #update Vm again to prepare for new momentum transfer
-        D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr2)
+    bs = 0 
+    for j in range(len(debris_array)):   #10 debris 
+        i = indicess[k][j]
+        D_Vbdtot= 0
+        Vd = np.sqrt(mu/((debris_array[i,0]+6371)*1000))                                            #debris velocity in circular orbit
         
-    bs += b
+        # if i == 0:
+        #     print (SmaandE(Vm))
+        b = 0                                                                   
+        while D_Vbdtot <= dvbtot(debris_array[i,0]):                                                   #stop the while loop when delta V applied to debris is enough to deorbit
+            b +=1                                                                  #number of rdv per debris
+            # Vro = OptVro(t, T, eta, debris_array[i,1], M, Sro, Vros, Isp)                      #update Vro with new mass
+            Vro = 2.5
+            srt = sr(t, T, eta, debris_array[i,1], M, Sro, Vro, Isp)
+            t_under_5 = TimeUnder5m(srt, t)                                        #update time between 2-5m
+            D_Vbd = T * eta *t_under_5/debris_array[i,1]                           #Delta V applied to debris for this rdv
+            Vd = Vd - D_Vbd  
+            D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
+            D_Vbm = Isp*g0*np.log(M/(M-t_under_5*T/(Isp*g0)))                      #Delta V applied to ourselves during burn
+            Vm = Vm + D_Vbm                                                        #update our spacecraft velocity
+            M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))                                         #update our mass after momentum transfer   
 
-    #print(f'number of rdv for debris{i+1}: {b}')
+            #check if it was the last burn 
+            if D_Vbdtot >= dvbtot(debris_array[i,0]):
+                break                                      
+            D_Vm = twoorbit(Vd,Vm)                                                 #see function explanation above
+            Vm -= D_Vm                                                             #update velocity
+            M = M/(np.exp(np.abs(D_Vm)/(Isp*g0)))                                          #update mass
+            # Vro = OptVro(t, T, eta, debris_array[i,1], M, Sro, Vros, Isp)                      #update Vro
+            Vro = 2.5
+            D_V_corr2 = (Vd-Vm) - Vro                                              #correction to achieve desired relative velocity
+            Vm += D_V_corr2 
+            M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0)))                             #update Vm again to prepare for new momentum transfer
+            D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr2)
+            
+        bs += b
 
-    if i < 9:           
-        Vro = OptVro(t, T, eta, debris_array[i,1], M, Sro, Vros, Isp)                                                             #not take extra transfer into account for last debris (EOL)
-        D_V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro
-        Vm += D_V_trans              #add transfer velocity to rdv with new debris 
-        D_Vtot = D_Vtot + np.abs(D_V_trans)
-        M = M/(np.exp(np.abs(D_V_trans)/(Isp*g0)))  
-     
+        #print(f'number of rdv for debris{i+1}: {b}')
+
+        if i < 9:           
+            # Vro = OptVro(t, T, eta, debris_array[i,1], M, Sro, Vros, Isp)                                                             #not take extra transfer into account for last debris (EOL)
+            Vro = 2.5
+            D_V_trans = np.sqrt(3.986*10**14/((debris_array[i,0]+6371)*1000)) -Vm -Vro
+            Vm += D_V_trans              #add transfer velocity to rdv with new debris 
+            D_Vtot = D_Vtot + np.abs(D_V_trans)
+            M = M/(np.exp(np.abs(D_V_trans)/(Isp*g0)))  
         
-    print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres
+            
+        # print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres
 
-fuel_mass = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
-print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
-print (bs)
-
+    fuel_mass = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
+    # print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
+    # print (bs)
+    # print(indicess[k])
+    if D_Vtot < minimum_dv:
+        minimum_dv = D_Vtot
+        sequence = indicess[k]
+    if k%1000 == 0:
+        print (k)
+print (f'minimum delta V: {minimum_dv} for sequence {sequence}')
