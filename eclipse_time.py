@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 # Input
 h = 600
 inclination = np.radians(53)
-solar_longitude_plot = np.radians(123.48)
+solar_longitude_plot = np.radians(180)
 
 # Constants
 R_e = 6371
