@@ -206,7 +206,7 @@ for k in range(len(indicess)):
                 phi_copy[z] = (phi_copy[z] + phi_change(debris_array[z,0],time))%360
                 
             time = 0
-            while phi_copy[i_next ] > np.abs(catchup_phi(a2, debris_array[i_next ,0])):
+            while phi_copy[i_next] > np.abs(catchup_phi(a2, debris_array[i_next ,0])):
                 delta_phi = catchup_phi(a2, debris_array[i_next ,0])  #calculate phase angle change for next rendezvous
                 phi_copy[i_next ]= (phi_copy[i_next] + delta_phi)  #update phase angle for next rendezvous
                 time += period(debris_array[i_next ,0], Vma)  #update time after phase angle change
