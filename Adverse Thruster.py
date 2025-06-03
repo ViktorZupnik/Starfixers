@@ -14,10 +14,10 @@ Mi = M
 Isp = 342
 g0 = 9.80665
 Sro = -5
-Vros = np.linspace(0, 3, 100)  # Wider range for Vro
-t = np.linspace(0.1, 15, 150)  # Time vector (start from 0.1 to avoid log(0))
+Vros = np.linspace(0, 5, 100)  # Wider range for Vro
+t = np.linspace(0.1, 30, 150)  # Time vector (start from 0.1 to avoid log(0))
 T = 465
-Ta=np.arange(0, 525, 25 )
+Ta=[0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
 print(Ta)
 # Function to compute debris delta-V
 def DebrisDeltaV(T, eta, t, md):
@@ -69,24 +69,24 @@ def TimeUnder5m(srt, t):
 
     # Main optimizer: loop over thrusts
     # def OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp):
-    deltaVsDebris = []
-    valid_Ts = []
-    valid_v = []
-
-    for T in Ts:
-        Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
-        if Vro is None:
-            continue
-        srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
-        t_under5 = TimeUnder5m(srt, t)
-        if t_under5 is None:
-            continue
-        dV = DebrisDeltaV(T, eta, t_under5, md)
-        deltaVsDebris.append(dV)
-        valid_Ts.append(T)
-        valid_v.append(Vro)
-
-    return valid_Ts, deltaVsDebris, valid_v
+    # deltaVsDebris = []
+    # valid_Ts = []
+    # valid_v = []
+    #
+    # for T in Ts:
+    #     Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
+    #     if Vro is None:
+    #         continue
+    #     srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
+    #     t_under5 = TimeUnder5m(srt, t)
+    #     if t_under5 is None:
+    #         continue
+    #     dV = DebrisDeltaV(T, eta, t_under5, md)
+    #     deltaVsDebris.append(dV)
+    #     valid_Ts.append(T)
+    #     valid_v.append(Vro)
+    #
+    # return valid_Ts, deltaVsDebris, valid_v
 
 
 # ------------------------------------------------------MAIN DELTA V SIMULATION--------------------------------------
@@ -140,8 +140,8 @@ for i in range(len(Ta)):
         D_Vbdtot = 0
         Vd = np.sqrt(mu / ((600 + 6371) * 1000))
         # debris velocity in circular orbit
-        if i == 0:
-            print(SmaandE(Vm))
+        # if i == 0:
+        #     print(SmaandE(Vm))
         b = 0
         while D_Vbdtot <= 60.58:  # stop the while loop when delta V applied to debris is enough to deorbit
             b += 1  # number of rdv per debris
