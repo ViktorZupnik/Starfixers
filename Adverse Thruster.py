@@ -14,51 +14,52 @@ Mi = M
 Isp = 342
 g0 = 9.80665
 Sro = -5
-Vros = np.linspace(0, 5, 100)  # Wider range for Vro
-t = np.linspace(0.1, 30, 150)  # Time vector (start from 0.1 to avoid log(0))
+Vros = np.linspace(0, 3, 100)  # Wider range for Vro
+t = np.linspace(0.1, 15, 150)  # Time vector (start from 0.1 to avoid log(0))
 T = 465
 Ta=[0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
-print(Ta)
+
 # Function to compute debris delta-V
 def DebrisDeltaV(T, eta, t, md):
     return T * eta * t / md
-
 
 # Function to compute optimal Vro for a given thrust
 def OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta):
     for Vro in Vros:
         st = []
         for i in t:
-            m_dot = (T-Ta) / (Isp * g0)
-            m_i = M - m_dot * i
-            if m_i <= 0:
-                break
+            # m_dot = T / (Isp * g0)
+            # m_i = M- m_dot*i
+            m_i = M - (T/(Isp * g0) + Ta/(Isp * g0)) * t
+            #print(m_i)
+            # if m_i <= 0:
+            #     break
             term1 = Sro + Vro * i
-            term2 = -T * eta / (2 * md) * i ** 2
+            term2 = -T * eta / (2 * md) * i**2
             term3 = -Isp * g0 * (
-                    (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + i + np.log(M) * i
+                (m_i * np.log(m_i) - M * np.log(M)) / ((T-Ta) / (Isp * g0)) + i + np.log(M) * i
             )
             s = term1 + term2 + term3
+
             st.append(s)
+            #print(st)
         if st and np.max(st) >= -2:
             return Vro
     return None
 
-
 # Function to compute s_r(t)
 def sr(t, T, eta, md, M, Sro, Vro, Isp, Ta):
-    m_dot = (T-Ta) / (Isp * g0)
-    m_i = M - m_dot * t
+    #m_dot = (T-Ta) / (Isp * g0)
+    m_i = M - T/(Isp * g0) * t - Ta/(Isp * g0) * t
     s = np.full_like(t, np.nan)
     valid = m_i > 0
     term1 = Sro + Vro * t
-    term2 = -T * eta / (2 * md) * t ** 2
+    term2 = -T * eta / (2 * md) * t**2
     term3 = -Isp * g0 * (
-            (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + t + np.log(M) * t
+        (m_i * np.log(m_i) - M * np.log(M)) / ((T-Ta) / (Isp * g0)) + t + np.log(M) * t
     )
     s[valid] = term1[valid] + term2[valid] + term3[valid]
     return s
-
 
 # Time when s_r(t) crosses -5 again
 def TimeUnder5m(srt, t):
@@ -67,6 +68,12 @@ def TimeUnder5m(srt, t):
             return t[i]
     return None
 
+Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta[4]) # update Vro with new mass
+srt = sr(t, T, eta, md, M, Sro, Vro, Isp, Ta[4])
+time= TimeUnder5m(srt, t)
+print(Vro)
+print(srt)
+print(time)
     # Main optimizer: loop over thrusts
     # def OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp):
     # deltaVsDebris = []
