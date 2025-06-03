@@ -145,7 +145,7 @@ for i in range(len(Ta)):
         b = 0
         while D_Vbdtot <= 60.58:  # stop the while loop when delta V applied to debris is enough to deorbit
             b += 1  # number of rdv per debris
-            Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta[i])  # update Vro with new mass
+            Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta[i]) # update Vro with new mass
             srt = sr(t, T, eta, md, M, Sro, Vro, Isp, Ta[i])
             t_under_5 = TimeUnder5m(srt, t)  # update time between 2-5m
             D_Vbd = T * eta * t_under_5 / md  # Delta V applied to debris for this rdv
@@ -178,7 +178,7 @@ for i in range(len(Ta)):
             D_Vtot = D_Vtot + np.abs(D_V_trans)
             M = M / (np.exp(np.abs(D_V_trans) / (Isp * g0)))
 
-        print(f'delta-V {i + 1}: {D_Vtot}', 'md', md)  # total delta V for all debris and all manoeuvres
+        print(f'delta-V {i + 1}: {D_Vtot}')  # total delta V for all debris and all manoeuvres
 
     fuel_mass = Mi - M
     Fuel_masses.append(fuel_mass)
