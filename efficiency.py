@@ -63,6 +63,7 @@ def calculate_efficiency(half_cone_angle, distance, resolution, diffuse, object_
     Calculate the momentum transfer efficiency at a given distance and half cone angle.
     Supports both circular and rectangular objects.
     """
+    distance = abs(distance)
     if object_radius is not None:
         return calculate_efficiency_circle(half_cone_angle, object_radius, distance, resolution, diffuse)
     elif object_width is not None and object_length is not None:
