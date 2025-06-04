@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
 eta = 0.2
-md = np.linspace(260,260, 10)
+md = [260]*10
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
@@ -63,27 +63,32 @@ def TimeUnder5m(srt, t):
         if srt[i - 1] > -5 and srt[i] < -5:
             return t[i]
     return None
-
+# Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)  # update Vro with new mass
+# srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
+# time = TimeUnder5m(srt, t)
+# print(Vro)
+# print(srt)
+# print(time)
 # Main optimizer: loop over thrusts
 #def OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp):
-    deltaVsDebris = []
-    valid_Ts = []
-    valid_v = []
-
-    for T in Ts:
-        Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
-        if Vro is None:
-            continue
-        srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
-        t_under5 = TimeUnder5m(srt, t)
-        if t_under5 is None:
-            continue
-        dV = DebrisDeltaV(T, eta, t_under5, md)
-        deltaVsDebris.append(dV)
-        valid_Ts.append(T)
-        valid_v.append(Vro)
-
-    return valid_Ts, deltaVsDebris, valid_v
+    # deltaVsDebris = []
+    # valid_Ts = []
+    # valid_v = []
+    #
+    # for T in Ts:
+    #     Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
+    #     if Vro is None:
+    #         continue
+    #     srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
+    #     t_under5 = TimeUnder5m(srt, t)
+    #     if t_under5 is None:
+    #         continue
+    #     dV = DebrisDeltaV(T, eta, t_under5, md)
+    #     deltaVsDebris.append(dV)
+    #     valid_Ts.append(T)
+    #     valid_v.append(Vro)
+    #
+    # return valid_Ts, deltaVsDebris, valid_v
 
 
 #------------------------------------------------------MAIN DELTA V SIMULATION--------------------------------------
