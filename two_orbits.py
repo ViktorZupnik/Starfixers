@@ -25,7 +25,7 @@ Sro = -10
 Vros = np.arange(0, 7, 0.1)   # Wider range for Vro
 t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
 T = 465  
-minimum_distance_range = (1.8, 2.2)
+minimum_distance_range = (1.7, 2.3) #Need some sources on this
 
 
 # Function to compute debris delta-V
@@ -109,32 +109,6 @@ def calculate_DV_debris(T, t, md, t_under_10, srt, half_cone_angle=fs['hca'], re
         eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
         DV += T * eta * (t[1]-t[0]) / md
     return DV
-# Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)  # update Vro with new mass
-# srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
-# time = TimeUnder5m(srt, t)
-# print(Vro)
-# print(srt)
-# print(time)
-# Main optimizer: loop over thrusts
-#def OptimizeThrust(t, Ts, eta, md, M, Sro, Vros, Isp):
-    # deltaVsDebris = []
-    # valid_Ts = []
-    # valid_v = []
-    #
-    # for T in Ts:
-    #     Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp)
-    #     if Vro is None:
-    #         continue
-    #     srt = sr(t, T, eta, md, M, Sro, Vro, Isp)
-    #     t_under5 = TimeUnder5m(srt, t)
-    #     if t_under5 is None:
-    #         continue
-    #     dV = DebrisDeltaV(T, eta, t_under5, md)
-    #     deltaVsDebris.append(dV)
-    #     valid_Ts.append(T)
-    #     valid_v.append(Vro)
-    #
-    # return valid_Ts, deltaVsDebris, valid_v
 
 
 #------------------------------------------------------MAIN DELTA V SIMULATION--------------------------------------
@@ -225,7 +199,7 @@ for i in range(10):   #10 debris
         
     print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres
 
-fuel_mass = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
+fuel_mass = Mi - M                         
 print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
 print (bs)
 
