@@ -126,15 +126,17 @@ def SmaandE(vm):
     return sma, e
 
 bs = 0 
-for i in range(10):   #10 debris 
+drag_dv_list = []
 
+for i in range(10):   #10 debris 
     D_Vbdtot= 0
     Vd = np.sqrt(mu/((600+6371)*1000))   
                               #debris velocity in circular orbit
     if i == 0:
         print (SmaandE(Vm))
-    b = 0                                                                   
-    while D_Vbdtot <= 60.58:                                                   #stop the while loop when delta V applied to debris is enough to deorbit
+    b = 0 
+                                                                 
+    while D_Vbdtot <= 60.58:   #stop the while loop when delta V applied to debris is enough to deorbit                                                     
         b +=1                                                                  #number of rdv per debris
         Vro = OptVro(t, T, eta, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
         srt = sr(t, T, eta, md[i], M, Sro, Vro, Isp)
@@ -144,7 +146,61 @@ for i in range(10):   #10 debris
         D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
         D_Vbm = Isp*g0*np.log(M/(M-t_under_5*T/(Isp*g0)))                      #Delta V applied to ourselves during burn
         Vm = Vm + D_Vbm                                                        #update our spacecraft velocity
-        M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))                                         #update our mass after momentum transfer   
+        M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))                                  #update our mass after momentum transfer 
+
+        #Drag calculations 
+        Cd_shepherd = 2.2
+        A_shepherd = 3.0  # m²
+        Cd_debris = 2.4
+        Cd_shepperd = 2.4
+        A_debris = 10.0   # m²
+        r_earth = 6371e3  # m
+
+        def density(h):
+            rho0 = 3.614e-13  # kg/m³ at 400 km
+            h0 = 400e3        # meters
+            H = 60e3          # scale height for LEO
+            return rho0 * np.exp(-(h - h0) / H)
+
+        #Calculate orbital radius and altitude for elliptical orbit 
+        h_apo_km=600
+        r_apo = r_earth + h_apo_km * 1000  # convert km to m
+        inv_ad = (2 / r_apo) - (Vd ** 2) / mu
+        inv_am = (2 / r_apo) - (Vm ** 2) / mu
+        ad = 1 / inv_ad
+        am = 1 / inv_am
+        
+        r_debris=2*ad-r_apo
+        r_shepherd=2*am-r_apo
+        
+        h_debris = r_debris - r_earth
+        h_shepherd = r_shepherd - r_earth
+
+        # --- Calculate atmospheric density
+        rho_debris = density(h_debris)
+        rho_shepherd = density(h_shepherd)
+
+        # --- Drag force
+        F_drag_debris = 0.5 * Cd_debris * A_debris * rho_debris * Vd**2
+        F_drag_shepherd = 0.5 * Cd_shepperd * A_shepherd * rho_shepherd * Vm**2
+
+        # --- Drag acceleration
+        a_drag_debris = F_drag_debris / md[i]
+        a_drag_shepherd = F_drag_shepherd / M
+
+        # --- ΔV loss per orbit (assume drag acts strongly over ~100s per orbit)
+        t_drag = 376.2  # seconds
+        delta_v_drag_debris = a_drag_debris * t_drag
+        delta_v_drag_shepherd = a_drag_shepherd * t_drag
+
+        # --- Orbital period
+        T_orbit_debris = 2 * np.pi * np.sqrt(r_debris**3 / mu) / 60  # minutes
+        T_orbit_shepherd = 2 * np.pi * np.sqrt(r_shepherd**3 / mu) / 60  # minutes
+        diff_time = T_orbit_shepherd-T_orbit_debris
+
+        Vd = Vd - delta_v_drag_debris
+        Vm = Vm - delta_v_drag_shepherd
+
 
         #check if it was the last burn 
         if D_Vbdtot >= 60.58:
@@ -157,6 +213,7 @@ for i in range(10):   #10 debris
         Vm += D_V_corr2 
         M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0)))                             #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr2)
+        print(f"Debris Altitude: {h_debris/1000:.2f} km, Shepherd Altitude: {h_shepherd/1000:.2f} km")
         
     bs += b
 
@@ -168,9 +225,16 @@ for i in range(10):   #10 debris
         Vm += D_V_trans              #add transfer velocity to rdv with new debris 
         D_Vtot = D_Vtot + np.abs(D_V_trans)
         M = M/(np.exp(np.abs(D_V_trans)/(Isp*g0)))  
-     
-        
-    print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres
+    
+    print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])    
+    
+    print(f"Debris Orbital Period: {T_orbit_debris:.2f} min, Shepherd Orbital Period: {T_orbit_shepherd:.2f} min")
+    print(f"Extra time of orbit due to drag:{diff_time:.2f}" )
+    print(f"Drag ΔV per orbit Debris: {delta_v_drag_debris:.2e} m/s, Shepherd: {delta_v_drag_shepherd:.2e} m/s")
+    drag_dv_list.append(delta_v_drag_debris)
+    total_drag_dv = sum(drag_dv_list)
+    print(f"Total ΔV from Drag Losses: {total_drag_dv:.4f} m/s")
+
 
 fuel_mass = Mi - Mi/(np.exp(D_Vtot/(Isp*g0)))
 print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
