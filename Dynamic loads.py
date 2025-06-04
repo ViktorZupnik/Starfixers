@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 
 g_axial = 8.5
 g_lateral = 3
+E = 114 * 10**9 #Elastic module Pa
+rho = 4429 #Density kg/m**3
+
 M_fuel_tank = 200       #Propellant tank mass (fueld) in kg
 M = 100                 #Mass supported by the side panles at launch
 E = 200 *10**9          #Panel elastic module in Pa
