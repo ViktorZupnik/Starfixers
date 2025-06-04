@@ -144,7 +144,7 @@ def SmaandE(vm):
     return sma, e
 Fuel_masses=[]
 for k in range(len(Ta)):
-
+    M = Mi
     Vd = np.sqrt(3.986 * 10 ** 14 / ((600 + 6371) * 1000))
     Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta[k])
     Vm = Vd - Vro
@@ -152,6 +152,7 @@ for k in range(len(Ta)):
     M = M / (np.exp(np.abs(Vro) / (Isp * g0)))
     mu = 3.986 * 10 ** 14  # in SI units
     bs = 0
+    
 
     for i in range(10):  # 10 debris
 
