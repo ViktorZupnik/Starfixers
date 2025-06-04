@@ -15,7 +15,7 @@ Isp = 342
 g0 = 9.80665
 Sro = -5
 Vros = np.linspace(0, 3, 100)  # Wider range for Vro
-t = np.linspace(0.1, 15, 150)  # Time vector (start from 0.1 to avoid log(0))
+t = np.linspace(0, 15, 150)  # Time vector (start from 0.1 to avoid log(0))
 T = 465
 Ta=[0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
 
@@ -25,38 +25,43 @@ def DebrisDeltaV(T, eta, t, md):
 
 # Function to compute optimal Vro for a given thrust
 def OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta):
+    T_net = T - Ta
+    T_total = T + Ta
+    m_dot = T_total / (Isp * g0)
+
     for Vro in Vros:
         st = []
         for i in t:
-            # m_dot = T / (Isp * g0)
-            # m_i = M- m_dot*i
-            m_i = M - (T/(Isp * g0) + Ta/(Isp * g0)) * t
-            #print(m_i)
-            # if m_i <= 0:
-            #     break
+            m_i = M - m_dot * i
+            if m_i <= 0:
+                continue
             term1 = Sro + Vro * i
-            term2 = -T * eta / (2 * md) * i**2
-            term3 = -Isp * g0 * (
-                (m_i * np.log(m_i) - M * np.log(M)) / ((T-Ta) / (Isp * g0)) + i + np.log(M) * i
-            )
+            term2 = -T_net * eta / (2 * md) * i**2
+            try:
+                term3 = -Isp * g0 * (
+                    (m_i * np.log(m_i) - M * np.log(M)) / (T_net / (Isp * g0)) + i + np.log(M) * i
+                )
+            except (ZeroDivisionError, ValueError):
+                continue
             s = term1 + term2 + term3
-
             st.append(s)
-            #print(st)
         if st and np.max(st) >= -2:
             return Vro
     return None
 
 # Function to compute s_r(t)
 def sr(t, T, eta, md, M, Sro, Vro, Isp, Ta):
-    #m_dot = (T-Ta) / (Isp * g0)
-    m_i = M - T/(Isp * g0) * t - Ta/(Isp * g0) * t
+    T_net = T - Ta
+    T_total = T + Ta
+    m_dot = T_total / (Isp * g0)
+    m_i = M - m_dot * t
     s = np.full_like(t, np.nan)
     valid = m_i > 0
     term1 = Sro + Vro * t
-    term2 = -T * eta / (2 * md) * t**2
-    term3 = -Isp * g0 * (
-        (m_i * np.log(m_i) - M * np.log(M)) / ((T-Ta) / (Isp * g0)) + t + np.log(M) * t
+    term2 = -T_net * eta / (2 * md) * t**2
+    term3 = np.zeros_like(t)
+    term3[valid] = -Isp * g0 * (
+        (m_i[valid] * np.log(m_i[valid]) - M * np.log(M)) / (T_net / (Isp * g0)) + t[valid] + np.log(M) * t[valid]
     )
     s[valid] = term1[valid] + term2[valid] + term3[valid]
     return s
@@ -68,8 +73,8 @@ def TimeUnder5m(srt, t):
             return t[i]
     return None
 
-Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta[4]) # update Vro with new mass
-srt = sr(t, T, eta, md, M, Sro, Vro, Isp, Ta[4])
+Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta[0]) # update Vro with new mass
+srt = sr(t, T, eta, md, M, Sro, Vro, Isp, Ta[0])
 time= TimeUnder5m(srt, t)
 print(Vro)
 print(srt)
@@ -190,7 +195,7 @@ for i in range(len(Ta)):
     fuel_mass = Mi - M
     Fuel_masses.append(fuel_mass)
     print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}')
-    print(bs)
+    #print(bs)
 plt.plot(Fuel_masses, Ta)
 plt.grid(True)
 plt.show()
