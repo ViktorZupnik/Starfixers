@@ -1,0 +1,132 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import fsolve
+import matplotlib.patches as patches
+
+
+def tank_volume(D, V, R):
+    """
+    Equation to solve for a given diameter D:
+    Volume = cylinder + sphere
+    """
+    H = D / R
+    r = D / 2
+    h_cylinder = H - D  # height minus the two hemispherical ends
+    V_calc = np.pi * r**2 * h_cylinder + (4/3) * np.pi * r**3
+    return V_calc - V
+
+def calculate_mass(D, H, rho, t):
+    """
+    Calculate the mass of the tank.
+    """
+    A = (D/2)**2 * np.pi * 4 + D * np.pi * (H-D)
+    return A * t * rho
+
+def plot_topview(deptwidth, D, L):
+    half = deptwidth / 2
+    square_x = [-half, half, half, -half, -half]
+    square_y = [-half, -half, half, half, -half]
+
+    # Define center points for the circles
+    center_points = [
+        (-half + D/2, -half + D/2),
+        (half - D/2, -half + D/2),
+        (half - D/2, half - D/2),
+        (-half + D/2, half - D/2)
+    ]
+
+# ---------------------------------- MMOI CALCULATION ---------------------------------- #
+
+# ---------------------------------- BUS ---------------------------------- #
+
+def calculate_mmoi_bus():
+    w_bus, d_bus, h_bus = 1, 1, 1  # dimensions in m
+    t_wall_bus = 0.01  # m
+    rho_bus_mat = 1  # kg/m^3
+    xyz_cg_bus = np.array([0, 0, 0])
+
+    # Approximate bus as hollow rectangular box
+    outer_vol = w_bus * d_bus * h_bus
+    inner_vol = (w_bus - 2*t_wall_bus) * (d_bus - 2*t_wall_bus) * (h_bus - 2*t_wall_bus)
+    mass_bus = (outer_vol - inner_vol) * rho_bus_mat
+
+    Ixx_bus = (1/12) * mass_bus * (d_bus**2 + h_bus**2)
+    Iyy_bus = (1/12) * mass_bus * (w_bus**2 + h_bus**2)
+    Izz_bus = (1/12) * mass_bus * (w_bus**2 + d_bus**2)
+
+# ---------------------------------- SOLAR PANELS ---------------------------------- #
+
+def calculate_mmoi_sp():
+    t_sp, w_sp, d_sp = 0.05, 2, 0.7
+    rho_sp = 1
+    xyz_cg_bus = np.array([0, 0, 0])
+    x_cg_sp = [0.75, 0.75, -0.75, -0.75]
+    y_cg_sp = [0.75, 0.75, -0.75, -0.75]
+    z_cg_sp = [0, 0, -0, -0]
+    vol_sp = t_sp * w_sp * d_sp
+    m_sp = vol_sp * rho_sp
+    sp_mmoi_total = np.zeros(3)
+
+    for i in range(4):
+        cg = np.array([x_cg_sp[i], y_cg_sp[i], z_cg_sp[i]])
+        Ixx = (1/12) * m_sp * (d_sp**2 + t_sp**2)
+        Iyy = (1/12) * m_sp * (w_sp**2 + t_sp**2)
+        Izz = (1/12) * m_sp * (w_sp**2 + d_sp**2)
+        
+        I_local = np.array([Ixx, Iyy, Izz])
+        d = cg - xyz_cg_bus
+        d_squared = np.array([d[1]**2 + d[2]**2, d[0]**2 + d[2]**2, d[0]**2 + d[1]**2])
+        sp_mmoi_total += I_local + m_sp * d_squared
+
+# ---------------------------------- SOLAR PANELS ---------------------------------- #
+
+def calculate_mmoi_tanks():
+
+
+
+
+
+
+# #------------------------------DIMENSIONS----------------------------------
+
+# # Bus Dimensions -------> Coordinate system for MMOI calculation fixed at the bus' CG
+
+# w_bus = 1  #m
+# d_bus = 1  #m
+# h_bus = 1  #m
+# t_wall_bus = 0.01  #m
+# rho_bus_mat = 1  #kg/m^3
+# xyz_cg_bus = [0, 0, 0]  #m
+
+# # Tank Dimensions
+
+# t_upper_cap_tank = 0.01  #m
+# r_upper_cap_tank = 0.2  #m
+# rho_upper_cap_tank = 1  #kg/m^3
+
+# t_lower_cap_tank = 0.01  #m
+# r_lower_cap_tank = 0.2  #m
+# rho_lower_cap_tank = 1  #kg/m^3
+
+# t_cylincer_tank = 0.01  #m
+
+# nr_tanks = 4
+
+# x_cg_tanks = [0.25, 0.25, -0.25, -0.25]
+# y_cg_tanks = [0.25, 0.25, -0.25, -0.25]
+# z_cg_tanks = [0.25, 0.25, -0.25, -0.25]
+
+# oxidiser_mass_tank = 325  #kg
+# fuel_mass_tank = 50  #kg
+
+
+# # Solar Panels Dimensions
+
+# t_sp = 0.05  #m
+# w_sp = 2  #m
+# d_sp = 0.7  #m
+# rho_sp = 1  #kg/m^3
+
+# x_cg_sp = [0.75, 0.75, -0.75, -0.75]
+# y_cg_sp = [0.75, 0.75, -0.75, -0.75]
+# z_cg_sp = [0, 0, -0, -0]
