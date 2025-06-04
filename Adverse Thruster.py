@@ -73,6 +73,7 @@ def TimeUnder5m(srt, t):
             return t[i]
     return None
 
+
 Vro = OptVro(t, T, eta, md, M, Sro, Vros, Isp, Ta[0]) # update Vro with new mass
 srt = sr(t, T, eta, md, M, Sro, Vro, Isp, Ta[0])
 time= TimeUnder5m(srt, t)
