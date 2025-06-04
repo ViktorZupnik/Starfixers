@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
 eta = 0.2
-md = 260
+md = [260]*10
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
