@@ -97,3 +97,22 @@ plt.title('Lateral Displacement Response to 1g Sine Acceleration at 100 Hz')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+
+max_disp_axial = np.max(np.abs(sol_axial.y[0]))
+max_disp_lateral = np.max(np.abs(sol_lateral.y[0]))
+
+print(f"Maximum Axial Displacement: {max_disp_axial:.6e} m")
+print(f"Maximum Lateral Displacement: {max_disp_lateral:.6e} m")
+
+# === Compute Strain and Stress ===
+# For axial: L = L_1 (height of panel)
+# For lateral: L = w_2 (width of panel)
+strain_axial = max_disp_axial / L_1
+strain_lateral = max_disp_lateral / w_1
+
+stress_axial = E * strain_axial
+stress_lateral = E * strain_lateral
+
+print(f"Axial Panel Stress: {stress_axial:.2f} Pa")
+print(f"Lateral Panel Stress: {stress_lateral:.2f} Pa")
