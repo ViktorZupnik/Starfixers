@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy import Function, dsolve, Eq, Derivative, symbols
-from sympy.abc import t
+import numpy as np
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
 
 
 Total_mass = 1200
@@ -38,13 +39,39 @@ K_Tanks = E*(np.pi*(r_outer_tanks**2-(r_outer_tanks-t_tanks)**2))/L_1*4
 K_total = K_panels + K_Tanks  #Total stiffness in N/m
 omega_total = (1/(2*np.pi))*np.sqrt(K_total/Total_mass)  #Total natural frequency in Hz
 print (f'Total natural frequency: {omega_total:.2f} Hz')
-x = Function('x')
 
-ode = Eq(M_axial*x(t).diff(t, t) + K_total * x(t), 0)
-sol = dsolve(ode, x(t))
-print(sol)
+
+
 # panels_submasses = np.linspace(0, M_panels, 100)
 # tanks_submasses = np.linspace(0, M_fuel_tank, 100)
 # for panel_submass in panels_submasses:
 #     for tank_submass in tanks_submasses:
         
+
+# ODE system: convert 2nd-order ODE to two 1st-order ODEs
+def mass_spring(t, y):
+    x, v = y              # y = [x, dx/dt]
+    dxdt = v
+    dvdt = -(K_total/M_axial)*x
+    return [dxdt, dvdt]
+
+# Initial conditions: x(0) = 1, dx/dt(0) = 0
+y0 = [1.0, 0.0]
+
+# Time span
+t_span = (0, 10)
+t_eval = np.linspace(*t_span, 300)
+
+
+# Solve ODE
+sol = solve_ivp(mass_spring, t_span, y0, t_eval=t_eval)
+
+# Plot results
+plt.plot(sol.t, sol.y[0], label='Displacement x(t)')
+#plt.plot(sol.t, sol.y[1], label='Velocity dx/dt')
+plt.xlabel('Time [s]')
+plt.ylabel('Response')
+plt.title('Mass-Spring System Response')
+plt.grid(True)
+plt.legend()
+plt.show()
