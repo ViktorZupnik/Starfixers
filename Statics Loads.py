@@ -5,16 +5,25 @@ g_axial = 8.5 * g
 g_lateral = 3 * g
 SF = 1.1    #Safety factor
 
-E = 114 * 10**9 #Elastic module Pa
-rho = 4429 #Density kg/m**3
-s_yeild_t = 880 * 10**6 # yeals strength tensile Pa
-s_ult_t = 950 * 10**6 # ult strength tensile Pa
-s_yeild_c = 970 * 10**6 # yeals strength compressive Pa
+# ---------Ti6Al4V-----------
+# E = 114 * 10**9 #Elastic module Pa
+# rho = 4429 #Density kg/m**3
+# s_yeild_t = 880 * 10**6 # yeals strength tensile Pa
+# s_ult_t = 950 * 10**6 # ult strength tensile Pa
+# s_yeild_c = 970 * 10**6 # yeals strength compressive Pa
+
+# ----------Al7075-T6-----------
+E = 71.7 * 10**9 #Elastic module Pa
+rho = 2810 #Density kg/m**3
+s_yeild_t = 503 * 10**6 # yeals strength tensile Pa
+s_ult_t = 572 * 10**6 # ult strength tensile Pa
+#s_yeild_c = 970 * 10**6 # yeals strength compressive Pa
+
 
 w_1 = 1     # Width of 2 sides m
 w_2 = 1     # Width of 2 sides m
 w_3 = 1     # height of a side plate m
-t = np.arange(0.0001, 0.05, 0.0001)  #bus wall thickness m
+t = np.arange(0.0001, 0.005, 0.0001)  #bus wall thickness m
 r = 0.3  #tank outer radius m
 t_t = 0.002 #tank wall thickness m
 y1=[]
