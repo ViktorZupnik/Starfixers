@@ -88,6 +88,7 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+
 # === Plot Results Lateral ===
 plt.figure(figsize=(10, 5))
 plt.plot(sol_lateral.t*1000, sol_lateral.y[0], label='Displacement (m)', color='blue')
