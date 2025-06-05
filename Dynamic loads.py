@@ -1,5 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy import Function, dsolve, Eq, Derivative, symbols
+from sympy.abc import t
+
+
 Total_mass = 1200
 g_axial = 8.5
 g_lateral = 3
@@ -22,6 +26,9 @@ K_total = K_panels + K_Tanks  #Total stiffness in N/m
 omega_total = (1/(2*np.pi))*np.sqrt(K_total/Total_mass)  #Total natural frequency in Hz
 print (f'Total natural frequency: {omega_total:.2f} Hz')
 
+x = Function('x')
+ode = Eq(x(t).diff(t,t) + 2 * x(t).diff(t) + 5 * x(t), 0)
+sol = dsolve(ode, x(t))
 # panels_submasses = np.linspace(0, M_panels, 100)
 # tanks_submasses = np.linspace(0, M_fuel_tank, 100)
 # for panel_submass in panels_submasses:
