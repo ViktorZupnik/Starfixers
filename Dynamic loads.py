@@ -34,19 +34,14 @@ print(M_axial)
 K_panel_1 = E*w_1*t_p/L_1     #Single panel stiffness in N/m
 K_panel_2 = E*w_2*t_p/L_2     #Single panel stiffness in N/m
 K_panel_3 = E*w_1*t_p/w_2
-K_panel_4 = E*L_1*t_p/w_2
-K_panels_axial = 2*K_panel_1 + 2*K_panel_2    #4 Panel stiffness in N/m
-K_panels_lateral = 2*K_panel_3 + 2*K_panel_4
+K_panels = 2*K_panel_1 + 2*K_panel_2    #4 Panel stiffness in N/m
 K_Tanks = E*(np.pi*(r_outer_tanks**2-(r_outer_tanks-t_tanks)**2))/L_1*4
-K_total_axial = K_panels_axial + K_Tanks  #Total stiffness in N/m
-K_total_lateral = K_panels_lateral
+K_total = K_panels + K_Tanks  #Total stiffness in N/m
 
 # === Damping ===
 zeta = 0.01  # 1% damping ratio
-omega_n_axial = np.sqrt(K_total_axial / M_axial)  # rad/s
-C_axial= 2 * zeta * np.sqrt(K_total_axial * M_axial)  # Ns/m
-omega_n_lateral = np.sqrt(K_total_lateral/ M_lateral)  # rad/s
-C_lateral= 2 * zeta * np.sqrt(K_total_lateral * M_lateral)  # Ns/m
+omega_n = np.sqrt(K_total / M_axial)  # rad/s
+C = 2 * zeta * np.sqrt(K_total * M_axial)  # Ns/m
 
 # === Forcing: 1g sinusoidal acceleration at 100 Hz ===
 f_drive = 100  # Hz
@@ -57,43 +52,26 @@ A_force = M_axial * 9.81  # N
 t_span = (0, 0.05)  # simulate for 50 ms
 t_eval = np.linspace(t_span[0], t_span[1], 10000)  # high-res output
 
-def systemaxial(t, y):
+def system(t, y):
     x, v = y  # displacement and velocity
     a_t = A_force * np.sin(omega_drive * t)
     dxdt = v
-    dvdt = (a_t - C_axial * v - K_total_axial * x) / M_axial
-    return [dxdt, dvdt]
-
-def systemlateral(t, y):
-    x, v = y  # displacement and velocity
-    a_t = A_force * np.sin(omega_drive * t)
-    dxdt = v
-    dvdt = (a_t - C_lateral* v - K_total_lateral * x) / M_lateral
+    dvdt = (a_t - C * v - K_total * x) / M_axial
     return [dxdt, dvdt]
 
 # Initial conditions: [displacement, velocity]
 y0 = [0, 0]
 
 # Integrate
-sol_axial = solve_ivp(systemaxial, t_span, y0, t_eval=t_eval, method='RK45')
-sol_lateral = solve_ivp(systemlateral, t_span, y0, t_eval=t_eval, method='RK45')
+sol = solve_ivp(system, t_span, y0, t_eval=t_eval, method='RK45')
 
-# === Plot Results Axial ===
-plt.figure(figsize=(10, 5))
-plt.plot(sol_axial.t*1000, sol_axial.y[0], label='Displacement (m)', color='blue')
-plt.xlabel('Time (ms)')
-plt.ylabel('Axial Displacement (m)')
-plt.title('Axial Displacement Response to 1g Sine Acceleration at 100 Hz')
-plt.grid(True)
-plt.tight_layout()
-plt.show()
 
-# === Plot Results Lateral ===
+# === Plot Results ===
 plt.figure(figsize=(10, 5))
-plt.plot(sol_lateral.t*1000, sol_lateral.y[0], label='Displacement (m)', color='blue')
+plt.plot(sol.t * 1000, sol.y[0], label='Displacement (m)', color='blue')
 plt.xlabel('Time (ms)')
-plt.ylabel('Lateral Displacement (m)')
-plt.title('Lateral Displacement Response to 1g Sine Acceleration at 100 Hz')
+plt.ylabel('Displacement (m)')
+plt.title('Displacement Response to 1g Sine Acceleration at 100 Hz')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
