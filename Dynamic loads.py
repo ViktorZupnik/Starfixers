@@ -33,6 +33,7 @@ print(M_axial)
 
 K_panel_1 = E*w_1*t_p/L_1     #Single panel stiffness in N/m
 K_panel_2 = E*w_2*t_p/L_2     #Single panel stiffness in N/m
+K_panel_3 = E*w_1*t_p/w_2
 K_panels = 2*K_panel_1 + 2*K_panel_2    #4 Panel stiffness in N/m
 K_Tanks = E*(np.pi*(r_outer_tanks**2-(r_outer_tanks-t_tanks)**2))/L_1*4
 K_total = K_panels + K_Tanks  #Total stiffness in N/m
