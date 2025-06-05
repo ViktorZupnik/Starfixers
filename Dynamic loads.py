@@ -15,7 +15,7 @@ w_1 = 1.13                 #Panel 1 width in m
 L_1 = 1.065                 #Panel 1 length in m (height)
 w_2 = 1.13                 #Panel 2 width in m
 L_2 = 1                 #Panel 2 length in m (height)
-r_outer_rod = 0.03
+r_outer_rod = 0.04
 t_rod = 0.004
 
 rho_panels = 2810
@@ -29,10 +29,12 @@ A_support =  np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2) #area of the support 
 A_lateral = 2*w_2*t_p + 2*L_1*t_p + 2*A_support  #area that holds lateral loads
 
 M_t_full = 150 #ull fuel tank mass kg
-M_rod = A_support*w_1*rho_panels
+M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
+print(M_rod)
 M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full   #Mass carried in the axial direction kg
 M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod    #Mass carried in the lateral direction kg
 print(M_axial)
+
 
 K_panel_1 = E*w_1*t_p/L_1     #Single panel stiffness in N/m
 K_panel_2 = E*w_2*t_p/L_2     #Single panel stiffness in N/m
