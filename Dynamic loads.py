@@ -10,25 +10,28 @@ g = 9.80665
 M_fuel_tank = 200       #Propellant tank mass (fueld) in kg
 M = 100                 #Mass supported by the side panles at launch
 E = 114 *10**9          #Panel elastic module in Pa
-t_p = 0.005               #Panel thickness in m
-w_1 = 1                 #Panel 1 width in m
-L_1 = 1                 #Panel 1 length in m (height)
-w_2 = 1                 #Panel 2 width in m
+t_p = 0.001              #Panel thickness in m
+w_1 = 1.13                 #Panel 1 width in m
+L_1 = 1.065                 #Panel 1 length in m (height)
+w_2 = 1.13                 #Panel 2 width in m
 L_2 = 1                 #Panel 2 length in m (height)
+r_outer_rod = 0.03
+t_rod = 0.004
 
-rho_panels = 4429
-r_outer_tanks = 0.3
-t_tanks = 0.01
+rho_panels = 2810
+r_outer_tanks = 0.533/2
+t_tanks = 0.002
 
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
 A_axial = 2*w_1*t_p + 2*w_2*t_p + 4* (2*np.pi*r_outer_tanks - 2*np.pi*r_inner) #area that holds axial loads
 #print(A_axial)
-A_support = 0 #area of the support beam
+A_support =  np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2) #area of the support beam
 A_lateral = 2*w_2*t_p + 2*L_1*t_p + 2*A_support  #area that holds lateral loads
 
 M_t_full = 150 #ull fuel tank mass kg
+M_rod = A_support*w_1*rho_panels
 M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full   #Mass carried in the axial direction kg
-M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p)     #Mass carried in the lateral direction kg
+M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod    #Mass carried in the lateral direction kg
 print(M_axial)
 
 K_panel_1 = E*w_1*t_p/L_1     #Single panel stiffness in N/m
@@ -38,8 +41,9 @@ K_panel_4 = E*L_1*t_p/w_2
 K_panels_axial = 2*K_panel_1 + 2*K_panel_2    #4 Panel stiffness in N/m
 K_panels_lateral = 2*K_panel_3 + 2*K_panel_4
 K_Tanks = E*(np.pi*(r_outer_tanks**2-(r_outer_tanks-t_tanks)**2))/L_1*4
+K_rod = E*(np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2))/L_1*4
 K_total_axial = K_panels_axial + K_Tanks  #Total stiffness in N/m
-K_total_lateral = K_panels_lateral
+K_total_lateral = K_panels_lateral +2*K_rod
 
 # === Damping ===
 zeta = 0.01  # 1% damping ratio
@@ -116,3 +120,43 @@ stress_lateral = E * strain_lateral
 
 print(f"Axial Panel Stress: {stress_axial:.2f} Pa")
 print(f"Lateral Panel Stress: {stress_lateral:.2f} Pa")
+
+#------ ACOUSTIC------
+import pandas as pd
+
+# Reference pressure
+p_ref = 2e-5  # Pa
+
+# Your 1/3 octave band center frequencies (Hz)
+frequencies = np.array([
+    31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
+    630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000
+])
+
+# Example: SPL values (from the table, WEST RANGE, WITH blankets)
+spl_db = np.array([
+    119.8, 120.0, 120.0, 120.0, 119.8, 120.5, 121.5, 122.0, 121.5, 120.5, 119.0,
+    117.0, 115.0, 113.0, 111.0, 109.5, 108.0, 107.0, 106.0, 105.0, 104.0,
+    103.0, 102.0, 101.0, 100.0, 99.0
+])
+
+# Convert SPL (dB) to RMS pressure (Pa)
+p_rms = p_ref * 10**(spl_db / 20)
+plt.plot(frequencies,p_rms)
+plt.show()
+# Estimate bandwidth for 1/3 octave
+factor = 2**(1/6)-2**(-1/6)
+factor_to_db = -10*np.log10(factor)
+delta_f = frequencies / factor_to_db
+
+# Compute pressure PSD in Pa^2/Hz
+psd = p_rms**2 / delta_f
+
+# Use trapezoidal integration over the frequency array
+integrated_power = np.trapz(psd, x=frequencies)  # Pa^2
+
+# Calculate total RMS stress from integrated power
+total_rms_pressure = np.sqrt(integrated_power)
+
+print(f"Total RMS Pressure: {total_rms_pressure:.2f} Pa")
+
