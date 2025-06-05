@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 Total_mass = 1200
 g_axial = 8.5
 g_lateral = 3
+g = 9.80665
 M_fuel_tank = 200       #Propellant tank mass (fueld) in kg
 M = 100                 #Mass supported by the side panles at launch
 E = 114 *10**9          #Panel elastic module in Pa
@@ -46,32 +47,34 @@ print (f'Total natural frequency: {omega_total:.2f} Hz')
 # tanks_submasses = np.linspace(0, M_fuel_tank, 100)
 # for panel_submass in panels_submasses:
 #     for tank_submass in tanks_submasses:
-        
+A = g
+omega = 2*np.pi*100     
 
 # ODE system: convert 2nd-order ODE to two 1st-order ODEs
-def mass_spring(t, y):
-    x, v = y              # y = [x, dx/dt]
+def mass_spring_forced(t, y):
+    x, v = y
+    F_t = A * np.sin(omega * t)    # external force
     dxdt = v
-    dvdt = -(K_total/M_axial)*x
+    dvdt = (F_t - K_total * x) / M_axial
     return [dxdt, dvdt]
 
-# Initial conditions: x(0) = 1, dx/dt(0) = 0
-y0 = [1.0, 0.0]
+# Initial conditions
+y0 = [0.0, 0.0]  # x(0) = 0, v(0) = 0
 
-# Time span
+# Time settings
 t_span = (0, 10)
-t_eval = np.linspace(*t_span, 300)
-
+t_eval = np.linspace(*t_span, 10000)
 
 # Solve ODE
-sol = solve_ivp(mass_spring, t_span, y0, t_eval=t_eval)
+sol = solve_ivp(mass_spring_forced, t_span, y0, t_eval=t_eval)
 
 # Plot results
+plt.figure(figsize=(10, 5))
 plt.plot(sol.t, sol.y[0], label='Displacement x(t)')
-#plt.plot(sol.t, sol.y[1], label='Velocity dx/dt')
+plt.plot(sol.t, A * np.sin(omega * sol.t), '--', label='Forcing Function F(t)', alpha=0.6)
 plt.xlabel('Time [s]')
 plt.ylabel('Response')
-plt.title('Mass-Spring System Response')
+plt.title('Forced Mass-Spring System')
 plt.grid(True)
 plt.legend()
 plt.show()
