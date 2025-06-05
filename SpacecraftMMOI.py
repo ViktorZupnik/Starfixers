@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 import matplotlib.patches as patches
 
+# --------------------------- SOME FUEL TANK CALCULATIONS -------------------------------- #
+
 def tank_volume(H, D, V):
     """
     Equation to solve for total tank height H:
