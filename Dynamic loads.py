@@ -82,6 +82,10 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
     sigma_with_stiff = (sigma_newsheet * b * t_p + sigma_stiffener * A_stiff) / (A_stiff + b * t_p)
 
     return A_stiff, sigma_with_stiff
+def halfpipe_stringer(r_outer_tanks,t_tanks,h,b,C=0.366, Fcy,E):
+    A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  # Area of the stiffener
+    b_ap = (h-b)/2
+    
 
 #Area calculations of panels, tanks, rod and stiffeners
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
