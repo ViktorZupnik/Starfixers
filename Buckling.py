@@ -6,7 +6,7 @@ nu = 0.33             # Poisson's ratio
 t_p = 0.002             # Panel thickness in meters
 t_t = 0.002             # Tank thickness in meters
 k = 6.0               # Buckling coefficient for clamped edges
-SF = 1.5               # Safety Factor
+SF = 1.2              # Safety Factor
 Kd = 0.5                # Knockdown factor
 r_outer = 0.533/2       #Tanks outer radius
 
