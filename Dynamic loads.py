@@ -54,7 +54,7 @@ t_rod = 0.002
 
 rho_panels = 2810
 r_outer_tanks = 0.533/2
-t_tanks = 0.002
+t_tanks = 0.004
 
 #stiffener dimensions
 h_stiff = 0.035
