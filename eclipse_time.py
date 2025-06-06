@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Input
-h = 600
+h = 381
 inclination = np.radians(53)
-solar_longitude_plot = np.radians(180)
+solar_longitude_plot = np.radians(126.80)
 
 # Constants
 R_e = 6371
@@ -137,7 +137,7 @@ print(T)
 plt.plot(longitudes, shadow_times)
 plt.xlabel("Solar Longitude (radians)")
 plt.ylabel("Eclipse Time (seconds)")
-plt.title("Orbit Time in Earth's Shadow vs Solar Longitude")
+plt.title("Orbit Time in Eclipse vs Solar Longitude")
 plt.grid(True)
 plt.show()
 
@@ -160,8 +160,9 @@ ax.set_box_aspect([1, 1, 1])
 
 # Set plot properties
 ax.set_title('Orbit and Earth Shadow')
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+ax.set_xlabel('X (km)')
+ax.set_ylabel('Y (km)')
+ax.set_zlabel('Z (km)')
+ax.view_init(elev=20, azim=-120)
 
 plt.show()
