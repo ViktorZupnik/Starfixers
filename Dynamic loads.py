@@ -7,28 +7,33 @@ import matplotlib.pyplot as plt
 
 g = 9.80665
 
-def bending_stress_at_x(
-    x,            # Position along tank [m]
-    total_mass,   # Tank total mass [kg]
-    beam_length,  # Tank height [m]
-    r,            # Tank radius [m]
-    t,            # Tank thickness [m]
-    g_lateral     # Lateral acceleration  [g] (1g = 9.80665 m/s^2)
-):
-    w = (g_lateral * total_mass * g) / beam_length  # distributed load [N/m]
-
-    # Bending moment at position x
-    Mx = (w * beam_length / 12) * (6 * x - beam_length) - (w * x**2) / 2
-
-    # Section properties
-    I = np.pi*(r**4-(r-t)**4)/4
-
-    # Bending stress at x
-    stress = (Mx * r) / I  # in Pascals
-    return stress
-
-
-print (bending_stress_at_x(0, 150, 1.065, 0.533/2, 0.002, 3))
+# def bending_stress_at_x(
+#     x,            # Position along tank [m]
+#     total_mass,   # Tank total mass [kg]
+#     beam_length,  # Tank height [m]
+#     r,            # Tank radius [m]
+#     t,            # Tank thickness [m]
+#     g_lateral,     # Lateral acceleration  [g] (1g = 9.80665 m/s^2)
+#     A_rod,          # Support rod area m**2
+#     E_rod            # Support rod elastic modulus
+#
+# ):
+#     w = (g_lateral * total_mass * g) / beam_length  # distributed load [N/m]
+#
+#     # Bending moment at position x
+#     Mx = (w * beam_length / 12) * (6 * x - beam_length) - (w * x**2) / 2
+#
+#     # Section properties
+#     I = np.pi*(r**4-(r-t)**4)/4
+#
+#     # Bending stress at x
+#     stress = (Mx * r) / I  # in Pascals
+#
+#
+#     return stress
+#
+#
+# print ("bending stress in the middle of a tank: ", bending_stress_at_x(0, 150, 1.065, 0.533/2, 0.002, 3))
 
 g_axial = 8.5
 g_lateral = 3
@@ -183,6 +188,54 @@ stress_lateral = E * strain_lateral
 
 print(f"Axial Panel Stress: {stress_axial:.2f} Pa")
 print(f"Lateral Panel Stress: {stress_lateral:.2f} Pa")
+
+
+
+walls_axial = {
+    "Front": (w_1, L_1),
+    "Back": (w_1, L_1),
+    "Left": (w_2, L_1),
+    "Right": (w_2, L_1)
+}
+
+walls_lateral = {
+    "Top": (w_1, w_2),
+    "Bottom": (w_1, w_2),
+    "Front": (w_1, L_1),
+    "Back": (w_1, L_1),
+}
+
+def sigma_cr_plate(E, nu, t_p, b, k, SF):
+
+    return (1/SF)*(k * (np.pi**2) * E / (12 * (1 - nu**2))) * (t_p / b)**2
+
+def cylinder_buckling(E, t_t, r_outer, Kd):
+
+    sigma_cr_ideal = 0.605 * E * t_t / (r_outer - t_t/2)
+    sigma_cr_real = Kd * sigma_cr_ideal
+    return sigma_cr_ideal, sigma_cr_real
+
+Kd = 0.5        #Knockdown factor
+ideal, real = cylinder_buckling(E, t_tanks, r_outer_tanks, Kd)
+
+print(f"Ideal buckling stress: {ideal/1e6:.4f} MPa")
+print(f"Realistic (with knockdown): {real/1e6:.4f} MPa")
+k = 6 #bucklin fcator for totally clamped plate
+nu= 0.334 # poisson's ratio
+SF = 1.1
+
+print("Critical Buckling Stress for Cube Walls in axial direction:")
+for name, (a, b) in walls_axial.items():
+    b_eff = min(a, b)  # Buckling depends on shorter dimension
+    sigma_cr = sigma_cr_plate(E, nu, t_p, b_eff, k, SF)
+    print(f"{name} wall: {sigma_cr/1e6:.2f} MPa")
+
+print("\n\nCritical Buckling Stress for Cube Walls in lateral direction:")
+for name, (a, b) in walls_lateral.items():
+    b_eff = min(a, b)  # Buckling depends on shorter dimension
+    sigma_cr = sigma_cr_plate(E, nu, t_p, b_eff, k, SF)
+    print(f"{name} wall: {sigma_cr / 1e6:.2f} MPa")
+
 
 #------ ACOUSTIC------
 # Reference pressure
