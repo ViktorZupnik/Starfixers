@@ -40,8 +40,8 @@ w_1 = 1.13                 #Panel 1 width in m
 L_1 = 1.065                 #Panel 1 length in m (height)
 w_2 = 1.13                 #Panel 2 width in m
 L_2 = L_1                 #Panel 2 length in m (height)
-r_outer_rod = 0.04
-t_rod = 0.004
+r_outer_rod = 0.02
+t_rod = 0.001
 
 rho_panels = 2810
 r_outer_tanks = 0.533/2
