@@ -55,10 +55,10 @@ A_lateral = 2*w_2*t_p + 2*L_1*t_p + 2*A_support  #area that holds lateral loads
 
 M_t_full = 150 #ull fuel tank mass kg
 M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
-print(M_rod)
+#print(M_rod)
 M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full   #Mass carried in the axial direction kg
 M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod    #Mass carried in the lateral direction kg
-print(M_axial)
+#print(M_axial)
 
 
 K_panel_1 = E*w_1*t_p/L_1     #Single panel stiffness in N/m
@@ -158,7 +158,7 @@ import pandas as pd
 p_ref = 2e-5  # Pa
 p_rms = p_ref * 10**(137.2/20)  # Convert dB to Pa
 p_peak = p_rms * np.sqrt(2)  # Convert RMS to peak pressure
-print(p_rms,p_peak)  # Convert dB to Pa
+print(f"rms pressure and peak pressure for acoustic loads::{p_rms,p_peak}")  # Convert dB to Pa
 
 #------------------adding stiffeners to the panels - hat stiffeners--------------
 alpha = 0.8
@@ -176,20 +176,20 @@ t = 0.002
 A24 = h*t
 A135 = w*t #Area of the stiffener in m^2
 A_tot = A24*2+A135*3
-print(A_tot)
+
 # Critical stress for different parts of the stiffeners
 sigma_crippling15 = alpha*(C15/sigma_yield*E*np.pi**2/(12*(1-v**2))*(t/w)**2)**(1-n)*sigma_yield
 sigma_crippling24 = alpha*(C234/sigma_yield*E*np.pi**2/(12*(1-v**2))*(t/h)**2)**(1-n)*sigma_yield
 sigma_crippling3 = alpha*(C234/sigma_yield*E*np.pi**2/(12*(1-v**2))*(t/w)**2)**(1-n)*sigma_yield
 # Total crippling stress for the stiffeners
 sigma_crippling_tot = (2*sigma_crippling15*A135 + 2*sigma_crippling24*A24 + sigma_crippling3 *A135 )/ A_tot
-print(f"Total crippling stress: {sigma_crippling_tot:.2f} Pa")
+#print(f"Total crippling stress: {sigma_crippling_tot:.2f} Pa")
 b = w_2 /2 # stiffener spacing in m 
-print(b)
+#print(b)
 scr  = 4*E*np.pi**2/(12*(1-v**2))*(t_p/b)**2    #panel 
 
 s_tot = (scr*b*t_p+sigma_crippling_tot*A_tot)/(A_tot + b*t_p)
-print(f"Total stress with stiffeners: {s_tot:.2f} Pa")
+#print(f"Total stress with stiffeners: {s_tot:.2f} Pa")
 
 
 # # Your 1/3 octave band center frequencies (Hz)
