@@ -156,7 +156,7 @@ import pandas as pd
 
 # Reference pressure
 p_ref = 2e-5  # Pa
-p_rms = p_ref * 10**(137.2/20)  # Convert dB to Pa
+p_rms = p_ref * 10**(137.9/20)  # Convert dB to Pa
 p_peak = p_rms * np.sqrt(2)  # Convert RMS to peak pressure
 print(f"rms pressure and peak pressure for acoustic loads::{p_rms,p_peak}")  # Convert dB to Pa
 
