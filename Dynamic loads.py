@@ -224,8 +224,8 @@ def cylinder_buckling(E, t_t, r_outer, Kd):
 Kd = 0.5        #Knockdown factor
 ideal, real = cylinder_buckling(E, t_tanks, r_outer_tanks, Kd)
 
-print(f"Ideal buckling stress: {ideal/1e6:.4f} MPa")
-print(f"Realistic (with knockdown): {real/1e6:.4f} MPa")
+print(f"Ideal buckling stress for cylinder: {ideal/1e6:.4f} MPa")
+print(f"Realistic (with knockdown) for cylinder: {real/1e6:.4f} MPa")
 k = 6 #bucklin fcator for totally clamped plate
 nu= 0.334 # poisson's ratio
 SF = 1.1
