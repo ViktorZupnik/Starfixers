@@ -192,6 +192,12 @@ s_tot = (scr*b*t_p+sigma_crippling_tot*A_tot)/(A_tot + b*t_p)
 #print(f"Total stress with stiffeners: {s_tot:.2f} Pa")
 
 
+
+
+
+
+
+'''leave this code here pls'''
 # # Your 1/3 octave band center frequencies (Hz)
 # frequencies = np.array([
 #     31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
