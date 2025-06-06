@@ -241,7 +241,7 @@ for name, (a, b) in walls_lateral.items():
     b_eff = min(a, b)  # Buckling depends on shorter dimension
     sigma_cr = sigma_cr_plate(E, nu, t_p, b_eff, k, SF)
     print(f"{name} wall: {sigma_cr / 1e6:.2f} MPa")
-
+print(f"Buckling stress of a wall with 1 stiffener:{omega_stringer(h_stiff, w_stiff, t_stiff)[1]/1e6:.2f} MPa")
 
 #------ ACOUSTIC------
 # Reference pressure
