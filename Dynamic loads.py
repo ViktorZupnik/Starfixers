@@ -153,42 +153,11 @@ import pandas as pd
 
 # Reference pressure
 p_ref = 2e-5  # Pa
+p_rms = p_ref * 10**(137.2/20)  # Convert dB to Pa
+p_peak = p_rms * np.sqrt(2)  # Convert RMS to peak pressure
+print(p_rms,p_peak)  # Convert dB to Pa
 
-# Your 1/3 octave band center frequencies (Hz)
-frequencies = np.array([
-    31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
-    630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000
-])
-
-# Example: SPL values (from the table, WEST RANGE, WITH blankets)
-spl_db = np.array([
-    119.8, 120.0, 120.0, 120.0, 119.8, 120.5, 121.5, 122.0, 121.5, 120.5, 119.0,
-    117.0, 115.0, 113.0, 111.0, 109.5, 108.0, 107.0, 106.0, 105.0, 104.0,
-    103.0, 102.0, 101.0, 100.0, 99.0
-])
-
-# Convert SPL (dB) to RMS pressure (Pa)
-p_rms = p_ref * 10**(spl_db / 20)
-plt.plot(frequencies,p_rms)
-plt.show()
-# Estimate bandwidth for 1/3 octave
-factor = 2**(1/6)-2**(-1/6)
-factor_to_db = -10*np.log10(factor)
-delta_f = frequencies / factor_to_db
-
-# Compute pressure PSD in Pa^2/Hz
-psd = p_rms**2 / delta_f
-
-# Use trapezoidal integration over the frequency array
-integrated_power = np.trapz(psd, x=frequencies)  # Pa^2
-
-# Calculate total RMS stress from integrated power
-total_rms_pressure = np.sqrt(integrated_power)
-
-print(f"Total RMS Pressure: {total_rms_pressure:.2f} Pa")
-
-
-#adding stiffeners to the panels - hat stiffeners
+#------------------adding stiffeners to the panels - hat stiffeners--------------
 alpha = 0.8
 n = 0.6
 E = 71.7*10**9  # Elastic module in Pa
@@ -218,6 +187,50 @@ scr  = 4*E*np.pi**2/(12*(1-v**2))*(t_p/b)**2    #panel
 
 s_tot = (scr*b*t_p+sigma_crippling_tot*A_tot)/(A_tot + b*t_p)
 print(f"Total stress with stiffeners: {s_tot:.2f} Pa")
+
+
+# # Your 1/3 octave band center frequencies (Hz)
+# frequencies = np.array([
+#     31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
+#     630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000
+# ])
+
+# # Example: SPL values (from the table, WEST RANGE, WITH blankets)
+# spl_db = np.array([
+#     119.8, 120.0, 120.0, 120.0, 119.8, 120.5, 121.5, 122.0, 121.5, 120.5, 119.0,
+#     117.0, 115.0, 113.0, 111.0, 109.5, 108.0, 107.0, 106.0, 105.0, 104.0,
+#     103.0, 102.0, 101.0, 100.0, 99.0
+# ])
+
+# # Convert SPL (dB) to RMS pressure (Pa)
+# p_rms = p_ref * 10**(spl_db / 20)
+# plt.plot(frequencies,p_rms)
+# plt.show()
+# # Estimate bandwidth for 1/3 octave
+# factor = 2**(1/6)-2**(-1/6)
+# factor_to_db = -10*np.log10(factor)
+# delta_f = frequencies / factor_to_db
+
+# # Compute pressure PSD in Pa^2/Hz
+# psd = p_rms**2 / delta_f
+
+# # Use trapezoidal integration over the frequency array
+# integrated_power = np.trapz(psd, x=frequencies)  # Pa^2
+
+# # Calculate total RMS stress from integrated power
+# total_rms_pressure = np.sqrt(integrated_power)
+
+# print(f"Total RMS Pressure for acoustic vibrations: {total_rms_pressure:.2f} Pa")
+# #--------------Random vibration analysis-------------------
+# frequency_rnd = np.array([20, 100, 300, 700, 800, 925, 2000])  # Hz
+# psd_rnd = np.array([0.0044, 0.0044, 0.01, 0.01, 0.03, 0.03, 0.00644])  # g^2/Hz
+# # Use trapezoidal integration over the frequency array
+# integrated_power_rnd = np.trapz(psd_rnd, x=frequency_rnd)  # Pa^2
+
+# # Calculate total RMS stress from integrated power
+# total_rms_pressure_rnd = np.sqrt(integrated_power_rnd)
+
+# print(f"Total RMS Pressure for random vibration: {total_rms_pressure_rnd:.2f} Pa")
 
 
 
