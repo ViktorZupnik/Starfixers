@@ -10,6 +10,8 @@ SF = 1.2              # Safety Factor
 Kd = 0.5                # Knockdown factor
 r_outer = 0.533/2       #Tanks outer radius
 
+
+
 walls_axial = {
     "Front": (1.13, 1.065),
     "Back": (1.13, 1.065),
