@@ -33,34 +33,59 @@ print (bending_stress_at_x(0, 150, 1.065, 0.533/2, 0.002, 3))
 g_axial = 8.5
 g_lateral = 3
 M_fuel_tank = 200       #Propellant tank mass (fueld) in kg
+alpha = 0.8
+v=0.334
+n = 0.6
+E = 71.7*10**9  # Elastic module in Pa
+sigma_yield = 503 * 10**6  # Yield strength in Pa
 M = 100                 #Mass supported by the side panles at launch
-E = 114 *10**9          #Panel elastic module in Pa
 t_p = 0.002              #Panel thickness in m
 w_1 = 1.13                 #Panel 1 width in m
 L_1 = 1.065                 #Panel 1 length in m (height)
 w_2 = 1.13                 #Panel 2 width in m
 L_2 = L_1                 #Panel 2 length in m (height)
-r_outer_rod = 0.02
-t_rod = 0.001
+r_outer_rod = 0.2          #Outer radius of the support rod in m
+t_rod = 0.002
 
 rho_panels = 2810
 r_outer_tanks = 0.533/2
 t_tanks = 0.002
 
+#stiffener dimensions
+h_stiff = 0.035
+w_stiff = 0.02
+t_stiff = 0.002
+
+def omega_stringer(h, w, t,C15=0.425, C234=4):
+    # Areas of stiffener segments (based on "whwhw" configuration)
+    A24 = h * t        # vertical parts
+    A135 = w * t       # horizontal parts
+    A_stiff = 2 * A24 + 3 * A135
+
+    # Crippling stresses
+    sigma_crippling15 = alpha * (C15 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / w)**2)**(1 - n) * sigma_yield
+    sigma_crippling24 = alpha * (C234 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / h)**2)**(1 - n) * sigma_yield
+    sigma_crippling3  = alpha * (C234 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / w)**2)**(1 - n) * sigma_yield
+
+    # Combined crippling stress
+    sigma_stiffener= (2 * sigma_crippling15 * A135 + 2 * sigma_crippling24 * A24 + sigma_crippling3 * A135) / A_stiff
+    # Stiffener spacing (assuming 1 stiffener in the center, edges supported)
+    b = w_2/ 2
+    # Buckling of panel width b
+    sigma_newsheet = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b)**2
+    # Total effective stress of panel + stiffener
+    sigma_with_stiff = (sigma_newsheet * b * t_p + sigma_stiffener * A_stiff) / (A_stiff + b * t_p)
+
+    return A_stiff, sigma_with_stiff
+
+#Area calculations of panels, tanks, rod and stiffeners
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
 A_axial = 2*w_1*t_p + 2*w_2*t_p + 4* (2*np.pi*r_outer_tanks - 2*np.pi*r_inner) #area that holds axial loads
-#print(A_axial)
 A_support =  np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2) #area of the support beam
 A_lateral = 2*w_2*t_p + 2*L_1*t_p + 2*A_support  #area that holds lateral loads
+A_stiff = omega_stringer(h_stiff, w_stiff, t_stiff)[0]  #area of the stiffeners
 
-M_t_full = 150 #ull fuel tank mass kg
-M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
-#print(M_rod)
-M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full   #Mass carried in the axial direction kg
-M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod    #Mass carried in the lateral direction kg
-#print(M_axial)
-
-
+#defining spring stiffnesses
 K_panel_1 = E*w_1*t_p/L_1     #Single panel stiffness in N/m
 K_panel_2 = E*w_2*t_p/L_2     #Single panel stiffness in N/m
 K_panel_3 = E*w_1*t_p/w_2
@@ -69,8 +94,16 @@ K_panels_axial = 2*K_panel_1 + 2*K_panel_2    #4 Panel stiffness in N/m
 K_panels_lateral = 2*K_panel_3 + 2*K_panel_4
 K_Tanks = E*(np.pi*(r_outer_tanks**2-(r_outer_tanks-t_tanks)**2))/L_1*4
 K_rod = E*(np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2))/L_1*4
+K_stiff = E*A_stiff/w_1
 K_total_axial = K_panels_axial + K_Tanks  #Total stiffness in N/m
-K_total_lateral = K_panels_lateral +2*K_rod
+K_total_lateral = K_panels_lateral +2*K_rod +4*K_stiff  #Total stiffness in N/m
+
+M_t_full = 150 #ull fuel tank mass kg
+M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
+M_stiff = A_stiff * rho_panels *w_1  #Mass of the stiffeners kg
+#print(M_rod)
+M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full   #Mass carried in the axial direction kg
+M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod +4*M_stiff   #Mass carried in the lateral direction kg
 
 # === Damping ===
 zeta = 0.01  # 1% damping ratio
@@ -152,44 +185,20 @@ print(f"Axial Panel Stress: {stress_axial:.2f} Pa")
 print(f"Lateral Panel Stress: {stress_lateral:.2f} Pa")
 
 #------ ACOUSTIC------
-import pandas as pd
-
 # Reference pressure
 p_ref = 2e-5  # Pa
 p_rms = p_ref * 10**(137.9/20)  # Convert dB to Pa
 p_peak = p_rms * np.sqrt(2)  # Convert RMS to peak pressure
-print(f"rms pressure and peak pressure for acoustic loads::{p_rms,p_peak}")  # Convert dB to Pa
+print(f"rms pressure and peak pressure for acoustic loads in Pa:{p_rms,p_peak}")  # Convert dB to Pa
 
-#------------------adding stiffeners to the panels - hat stiffeners--------------
-alpha = 0.8
-n = 0.6
-E = 71.7*10**9  # Elastic module in Pa
-sigma_yield = 503 * 10**6  # Yield strength in Pa
-sigma_buck_sheet = 0.83 *10**6
-C15 = 0.425      # buckling coefficient for stiffeners 
-C234 = 4         # buckling coefficient for stiffeners
-v = 0.334         # Poisson's ratio
-#omega stiffener with whwhw (1,2,3,4,5)
-h = 0.035
-w = 0.02
-t = 0.002
-A24 = h*t
-A135 = w*t #Area of the stiffener in m^2
-A_tot = A24*2+A135*3
 
-# Critical stress for different parts of the stiffeners
-sigma_crippling15 = alpha*(C15/sigma_yield*E*np.pi**2/(12*(1-v**2))*(t/w)**2)**(1-n)*sigma_yield
-sigma_crippling24 = alpha*(C234/sigma_yield*E*np.pi**2/(12*(1-v**2))*(t/h)**2)**(1-n)*sigma_yield
-sigma_crippling3 = alpha*(C234/sigma_yield*E*np.pi**2/(12*(1-v**2))*(t/w)**2)**(1-n)*sigma_yield
-# Total crippling stress for the stiffeners
-sigma_crippling_tot = (2*sigma_crippling15*A135 + 2*sigma_crippling24*A24 + sigma_crippling3 *A135 )/ A_tot
-#print(f"Total crippling stress: {sigma_crippling_tot:.2f} Pa")
-b = w_2 /2 # stiffener spacing in m 
-#print(b)
-scr  = 4*E*np.pi**2/(12*(1-v**2))*(t_p/b)**2    #panel 
 
-s_tot = (scr*b*t_p+sigma_crippling_tot*A_tot)/(A_tot + b*t_p)
-#print(f"Total stress with stiffeners: {s_tot:.2f} Pa")
+
+
+
+
+
+
 
 
 
