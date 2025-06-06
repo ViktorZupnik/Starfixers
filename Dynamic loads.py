@@ -49,7 +49,7 @@ w_1 = 1.13                 #Panel 1 width in m
 L_1 = 1.065                 #Panel 1 length in m (height)
 w_2 = 1.13                 #Panel 2 width in m
 L_2 = L_1                 #Panel 2 length in m (height)
-r_outer_rod = 0.2          #Outer radius of the support rod in m
+r_outer_rod = 0.02          #Outer radius of the support rod in m
 t_rod = 0.002
 
 rho_panels = 2810
@@ -110,6 +110,12 @@ M_stiff = A_stiff * rho_panels *w_1  #Mass of the stiffeners kg
 M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full   #Mass carried in the axial direction kg
 M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod +4*M_stiff   #Mass carried in the lateral direction kg
 
+#===== Static Loads=======
+
+Axial_static_stress = g_axial*g*M_axial/A_axial
+Lateral_static_stress = g_lateral*g*M_lateral/A_lateral
+print("The axial static stress is: ", Axial_static_stress , " Pa")
+print("The lateral static stress is: ", Lateral_static_stress , " Pa")
 # === Damping ===
 zeta = 0.01  # 1% damping ratio
 omega_n_axial = np.sqrt(K_total_axial / M_axial)  # rad/s

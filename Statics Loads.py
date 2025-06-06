@@ -19,8 +19,8 @@ s_yeild_t = 503 * 10**6 # yeals strength tensile Pa
 s_ult_t = 572 * 10**6 # ult strength tensile Pa
 #s_yeild_c = 970 * 10**6 # yeals strength compressive Pa
 
-r_outer_rod = 0.04
-t_rod = 0.004
+r_outer_rod = 0.02
+t_rod = 0.002
 
 w_1 = 1     # Width of 2 sides m
 w_2 = 1     # Width of 2 sides m
@@ -39,7 +39,7 @@ for i in t:
 
     M_t_full = 150 #ull fuel tank mass kg
     M_axial = w_1*w_2*i*rho + rho*(2*w_1*w_3*i + 2*w_2*w_3*i) + 4*M_t_full   #Mass carried in the axial direction kg
-    M_lateral = 2*M_t_full + w_3*w_2*i*rho      #Mass carried in the lateral direction kg
+    M_lateral = 2*M_t_full + w_3*w_2*i*rho     #Mass carried in the lateral direction kg
 
 
     stress_axial = g_axial*M_axial/A_axial
@@ -67,8 +67,8 @@ A_support = np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2) #area of the support b
 A_lateral = 2*w_2*t0 + 2*w_3*t0 + 2*A_support  #area that holds lateral loads
 
 M_t_full = 150 #ull fuel tank mass kg
-M_axial = w_1*w_2*t0*rho + rho*(2*w_1*w_3*t0 + 2*w_2*w_3*t0)    #Mass carried in the axial direction kg
-M_lateral = 2*M_t_full + w_3*w_2*t0*rho      #Mass carried in the lateral direction kg
+M_axial = w_1*w_2*t0*rho + rho*(2*w_1*w_3*t0 + 2*w_2*w_3*t0) + 4*M_t_full   #Mass carried in the axial direction kg
+M_lateral = 2*M_t_full + w_3*w_2*t0*rho  +  rho*(2*w_1*w_3*t0 + 2*w_2*w_1*t0)  #Mass carried in the lateral direction kg
 
 
 stress_axial = g_axial*M_axial/A_axial
