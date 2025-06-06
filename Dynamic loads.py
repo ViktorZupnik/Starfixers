@@ -80,9 +80,12 @@ omega_n_lateral = np.sqrt(K_total_lateral/ M_lateral)  # rad/s
 C_lateral= 2 * zeta * np.sqrt(K_total_lateral * M_lateral)  # Ns/m
 
 # === Forcing: 1g sinusoidal acceleration at 100 Hz ===
-f_drive = 100  # Hz
-omega_drive = 2 * np.pi * f_drive  # rad/s
-A_force = M_axial * 9.81  # N
+f_drive_axial = 925#100  # Hz
+f_drive_lateral = 925#100  # Hz
+omega_drive_axial = 2 * np.pi * f_drive_axial  # rad/s
+omega_drive_lateral = 2 * np.pi * f_drive_lateral  # rad/s
+A_force_axial = M_axial * 9.81*5.13  # N
+A_force_lateral = M_lateral * 9.81*5.13  # N
 
 # === Time Domain Simulation ===
 t_span = (0, 0.05)  # simulate for 50 ms
@@ -90,14 +93,14 @@ t_eval = np.linspace(t_span[0], t_span[1], 10000)  # high-res output
 
 def systemaxial(t, y):
     x, v = y  # displacement and velocity
-    a_t = A_force * np.sin(omega_drive * t)
+    a_t = A_force_axial * np.sin(omega_drive_axial * t)
     dxdt = v
     dvdt = (a_t - C_axial * v - K_total_axial * x) / M_axial
     return [dxdt, dvdt]
 
 def systemlateral(t, y):
     x, v = y  # displacement and velocity
-    a_t = A_force * np.sin(omega_drive * t)
+    a_t = A_force_lateral * np.sin(omega_drive_lateral * t)
     dxdt = v
     dvdt = (a_t - C_lateral* v - K_total_lateral * x) / M_lateral
     return [dxdt, dvdt]
