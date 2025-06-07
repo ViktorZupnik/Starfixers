@@ -81,11 +81,30 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
     # Total effective stress of panel + stiffener
     sigma_with_stiff = (sigma_newsheet * b * t_p + sigma_stiffener * A_stiff) / (A_stiff + b * t_p)
 
-    return A_stiff, sigma_with_stiff
-def halfpipe_stringer(r_outer_tanks,t_tanks,h,b,C=0.366, Fcy,E):
-    A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  # Area of the stiffener
-    b_ap = (h-b)/2
-    
+    return A_stiff, sigma_stiffener, sigma_with_stiff
+# def halfpipe_stringer(r_outer_tanks, r_outer_rod, t_tanks, sigma_yield, E,C=0.366 ):
+#     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  
+#     Fcy = sigma_yield*A_stiff
+#     a = np.sqrt(r_outer_tanks**2-r_outer_rod**2)
+#     tan_alpha = r_outer_rod/(r_outer_tanks-a)
+#     h = tan_alpha*2*r_outer_tanks
+#     b = np.sqrt((h-r_outer_rod)**2 + (r_outer_tanks+a)**2)
+#     b_prime = (h-b)/2
+#     sigma_cr = (C*np.sqrt(Fcy*E)/(b_prime/t_tanks)**0.75)*A_stiff
+#     return A_stiff, sigma_cr
+def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E): 
+    A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)   
+    sigma_stiffener = alpha * (2 / sigma_yield * E *0.605*t_tanks/r_outer_tanks)**(1 - n) * sigma_yield
+    b = w_2-2*r_outer_tanks  # Effective width of the panel
+    # Buckling of panel width b
+    sigma_newsheet = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b)**2
+    # Total effective stress of panel + stiffener
+    sigma_with_stiff = (sigma_newsheet * b * t_p + sigma_stiffener * A_stiff) / (A_stiff + b * t_p)
+
+    return sigma_with_stiff
+
+print("pipe stringer crippling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)/1e6, " MPa"
+      "pipe new sheet", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa")
 
 #Area calculations of panels, tanks, rod and stiffeners
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
@@ -245,7 +264,7 @@ for name, (a, b) in walls_lateral.items():
     b_eff = min(a, b)  # Buckling depends on shorter dimension
     sigma_cr = sigma_cr_plate(E, nu, t_p, b_eff, k, SF)
     print(f"{name} wall: {sigma_cr / 1e6:.2f} MPa")
-print(f"Buckling stress of a wall with 1 stiffener:{omega_stringer(h_stiff, w_stiff, t_stiff)[1]/1e6:.2f} MPa")
+print(f"Buckling stress of a wall with 1 stiffener:{omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6:.2f} MPa")
 
 #------ ACOUSTIC------
 # Reference pressure
