@@ -6,34 +6,35 @@ import matplotlib.pyplot as plt
 
 
 g = 9.80665
-
-# def bending_stress_at_x(
-#     x,            # Position along tank [m]
-#     total_mass,   # Tank total mass [kg]
-#     beam_length,  # Tank height [m]
-#     r,            # Tank radius [m]
-#     t,            # Tank thickness [m]
-#     g_lateral,     # Lateral acceleration  [g] (1g = 9.80665 m/s^2)
+E = 71.7*10**9  # Elastic module in Pa
+def bending_stress_at_x(
+    x,            # Position along tank [m]
+    total_mass,   # Tank total mass [kg]
+    beam_length,  # Tank height [m]
+    r,            # Tank radius [m]
+    t,            # Tank thickness [m]
+    g_lateral):    # Lateral acceleration  [g] (1g = 9.80665 m/s^2)
 #     A_rod,          # Support rod area m**2
 #     E_rod            # Support rod elastic modulus
-#
+
 # ):
-#     w = (g_lateral * total_mass * g) / beam_length  # distributed load [N/m]
-#
-#     # Bending moment at position x
-#     Mx = (w * beam_length / 12) * (6 * x - beam_length) - (w * x**2) / 2
-#
-#     # Section properties
-#     I = np.pi*(r**4-(r-t)**4)/4
-#
-#     # Bending stress at x
-#     stress = (Mx * r) / I  # in Pascals
-#
-#
-#     return stress
-#
-#
-# print ("bending stress in the middle of a tank: ", bending_stress_at_x(0, 150, 1.065, 0.533/2, 0.002, 3))
+    w = (g_lateral * total_mass * g) / beam_length  # distributed load [N/m]
+
+    # Bending moment at position x
+    Mx = (w * beam_length / 12) * (6 * x - beam_length) - (w * x**2) / 2
+
+    # Section properties
+    I = np.pi*(r**4-(r-t)**4)/4
+
+    # Bending stress at x
+    stress = (Mx * r) / I  # in Pascals
+    displacement = 1/(E*I)*((-w *beam_length**2 * x**2) / 24 + (w * beam_length * x**3) / 12- (w * x**4) / 24)
+
+
+    return stress, displacement
+
+
+print ("bending stress in the middle of a tank: ", bending_stress_at_x(1.065/2, 150, 1.065, 0.533/2, 0.002, 3))
 
 g_axial = 8.5
 g_lateral = 3
