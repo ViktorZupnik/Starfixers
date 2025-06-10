@@ -37,7 +37,7 @@ def Sunside_temperature(Qsun, Qalb, Qearth, P_dis, epsilon, s, A_emitted):
     return T
 print(Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sigma, A_emitted))
 a = np.arange(0,1.01,0.01)
-e = np.arange(0,1.01,0.01)
+e = np.arange(0,.01,0.01)
 DT = 1000
 a_f =0
 e_f = 0
@@ -50,7 +50,7 @@ for i in range(len(a)):
         Q_IR = e * Jir * Ae * f1
         T_e = Eclipse_temperature(Q_IR, Q_internal, e, sigma, A_emitted)
         T_s = Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, e, sigma, A_emitted)
-        if T_s - T_e <= DT:
+        if abs(300-T_s) + abs(300- T_e) <= DT:
             DT = T_s-T_e
             T_ef = T_e
             T_sf = T_s
