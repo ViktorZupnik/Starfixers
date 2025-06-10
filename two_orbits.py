@@ -17,7 +17,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 1060
+M = 1000
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -87,7 +87,7 @@ def sr(t, T, md, M, Sro, Vro, Isp, half_cone_angle=fs['hca'], resolution=fs['res
 # Time when s_r(t) crosses -5 again
 def TimeUnderdistm(srt, t, dist):
     for i in range(1, len(t)):
-        if srt[i - 1] > -10 and srt[i] < -10:
+        if srt[i - 1] > -dist and srt[i] < -dist:
             return t[i]
     return None
 
@@ -158,7 +158,7 @@ for i in range(10):   #10 debris
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
         print(Vro)
         srt = sr(t, T, md[i], M, Sro, Vro, Isp)
-        t_under_10 = TimeUnderdistm(srt, t, 10)                                   #update time between 2-x m
+        t_under_10 = TimeUnderdistm(srt, t, 5)                                   #update time between 2-x m
         D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt)               #Delta V applied to debris for this rdv
         Vd = Vd - D_Vbd  
         D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
