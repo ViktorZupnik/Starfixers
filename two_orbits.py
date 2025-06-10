@@ -24,8 +24,9 @@ g0 = 9.80665
 Sro = -10
 Vros = np.arange(3.5, 8, 0.1)   # Wider range for Vro
 t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
-T = 465  
-minimum_distance_range = (-3, -2) #Need some sources on this
+T = 465
+op_dist = 9  
+minimum_distance_range = (-4, -3) #Need some sources on this
 
 
 # Function to compute debris delta-V
@@ -158,7 +159,7 @@ for i in range(10):   #10 debris
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
         print(Vro)
         srt = sr(t, T, md[i], M, Sro, Vro, Isp)
-        t_under_10 = TimeUnderdistm(srt, t, 5)                                   #update time between 2-x m
+        t_under_10 = TimeUnderdistm(srt, t, op_dist)                                   #update time between 2-x m
         D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt)               #Delta V applied to debris for this rdv
         Vd = Vd - D_Vbd  
         D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
