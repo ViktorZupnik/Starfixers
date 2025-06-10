@@ -255,12 +255,12 @@ for k in range(len(indicess)):
     if Mi < minimum_Mi and time_tot < 7257600:    #2.8 months in seconds
         minimum_Mi = Mi
         sequence = indicess[k]
-        min_dv_time = time_tot
+        min_dv_time = time_tot/60/60/24/30  # Convert seconds to months
         min_mirdv = bs
         not_optimal = False
     
 
-print (f'minimum Mass : {minimum_Mi} for sequence {sequence} and total time of {min_dv_time},rdv{min_mirdv}')
+print (f'minimum Mass : {minimum_Mi} for sequence {sequence} and total time of {min_dv_time}, number of rdv{min_mirdv}')
 
 
 
