@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 # ---- 1. CONFIGURATION ----
 # Satellite dimensions & mass (Starlink V1 example, but we only need Iz)
-a, b, c = 8.86, 3.7, 0.1   # [m]
+a, b, c = 8.86, 0.1, 3.7   # [m]
 m = 227.0                  # [kg]
 
 # Compute Moments of Inertia (kg·m^2)
@@ -13,36 +13,68 @@ Iz = (1/12) * m * (a**2 + b**2)
 I = np.array([Ix, Iy, Iz])
 
 # Choose an initial tumble rate about Z (rpm → rad/s)
-tumble_rpm = 1.0
+tumble_rpm = 3.0
 omega_mag = tumble_rpm * 2 * np.pi / 60    # rad/s
 
 # Initialize body‐rate so that it is purely about Z:
 omega_body = np.array([0.0, 0.0, omega_mag])  # [ωx, ωy, ωz]
+#omega_body = np.array([0.0, omega_mag, 0.0])  # [ωx, ωy, ωz]
+#omega_body = np.array([omega_mag, 0.0, 0.0])  # [ωx, ωy, ωz]
 
-# for attitude‐plots, but it won't affect ωz
+# Initial quaternion (identity: no rotation)
 q = np.array([1.0, 0.0, 0.0, 0.0])
 
 # Thruster parameters (actual 475 N thruster)
 thrust_force = 475          # [N]
 efficiency  = 0.6              # 60% of force goes into usable torque
 effective_force = thrust_force * efficiency  # [N] for torque calculation
-lever_arm = 5.0                # [m] distance from COM to thruster
-
-# We only consider detumbling about Z; so moment of inertia is Iz
-I_z = Iz
+lever_arm = 5                # [m] distance from COM to thruster
 
 # Angular‐rate threshold (rad/s) below which we say “detumbled”
 omega_threshold = 0.005       # rad/s
 
 # Simulation Time
 dt = 0.1                      # [s] timestep
-mission_duration_sec = 110.0  # [s] (for example)
+mission_duration_sec = 10.0  # [s] (for example)
 N_steps = int(mission_duration_sec / dt)
 
 # Storage arrays
 time_arr      = np.zeros(N_steps)
 omegaz_arr    = np.zeros(N_steps)   # just ωz each step
+omega_mag_arr = np.zeros(N_steps)
 dv_arr        = np.zeros(N_steps)
+
+def euler_derivatives(omega, I, damping_coeff=1e-3):
+    """
+    Compute dω/dt from Euler's equations (small linear damping added).
+    ω = [ωx, ωy, ωz], I = [Ix, Iy, Iz].
+    """
+    wx, wy, wz = omega
+    dω = np.zeros(3)
+    dω[0] = ((I[1] - I[2]) * wy * wz) / I[0] - damping_coeff * wx
+    dω[1] = ((I[2] - I[0]) * wz * wx) / I[1] - damping_coeff * wy
+    dω[2] = ((I[0] - I[1]) * wx * wy) / I[2] - damping_coeff * wz
+    return dω
+
+def quat_derivative(q, omega):
+    """
+    dq/dt = 0.5 * Ω(ω) * q, where q=[w,x,y,z], ω=[ox,oy,oz].
+    """
+    w, x, y, z = q
+    ox, oy, oz = omega
+    dqdt = 0.5 * np.array([
+        -x*ox - y*oy - z*oz,
+         w*ox + y*oz - z*oy,
+         w*oy - x*oz + z*ox,
+         w*oz + x*oy - y*ox
+    ])
+    return dqdt
+
+def normalize_quaternion(q):
+    norm = np.linalg.norm(q)
+    if norm < 1e-8:
+        return np.array([1.0, 0.0, 0.0, 0.0])
+    return q / norm
 
 # ---- 2. MAIN SIMULATION LOOP ----
 cumulative_dv = 0.0
@@ -50,11 +82,23 @@ detumbled = False
 
 # Pre‐compute constant torque/acceleration about Z:
 torque_z    = effective_force * lever_arm          # [N·m]
-alpha_z     = torque_z / I_z                       # [rad/s^2]
+alpha_z     = torque_z / Iz                       # [rad/s^2]
 
 for i in range(N_steps):
     t = i * dt
     time_arr[i] = t
+
+     # 3.1 – Natural dynamics: Euler's eqns + small damping
+    dω_natural = euler_derivatives(omega_body, I)
+    omega_body += dω_natural * dt
+
+    # 3.2 – Integrate quaternion (attitude) if you want to track actual orientation
+    dqdt = quat_derivative(q, omega_body)
+    q    = normalize_quaternion(q + dqdt * dt)
+
+    # 3.3 – Current |ω| magnitude
+    omega_norm = np.linalg.norm(omega_body)
+    omega_mag_arr[i] = omega_norm
 
     #only rotate about Z, we ignore Euler‐derivatives coupling for X,Y:
     #include a tiny damping on ωz so it slowly drifts 
