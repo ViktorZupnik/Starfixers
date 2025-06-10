@@ -58,9 +58,9 @@ r_outer_tanks = 0.533/2
 t_tanks = 0.004
 
 #stiffener dimensions
-h_stiff = 0.035
+h_stiff = 0.02
 w_stiff = 0.02
-t_stiff = 0.002
+t_stiff = 0.001
 
 def omega_stringer(h, w, t,C15=0.425, C234=4):
     # Areas of stiffener segments (based on "whwhw" configuration)
@@ -92,6 +92,8 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
 #     b = np.sqrt((h-r_outer_rod)**2 + (r_outer_tanks+a)**2)
 #     b_prime = (h-b)/2
 #     sigma_cr = (C*np.sqrt(Fcy*E)/(b_prime/t_tanks)**0.75)*A_stiff
+#     # Buckling of panel width b
+#     sigma_newsheet = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b)**2
 #     return A_stiff, sigma_cr
 def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E): 
     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)   
