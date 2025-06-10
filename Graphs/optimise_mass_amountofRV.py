@@ -39,8 +39,8 @@ for i, label in enumerate(distance_4_5):
     plt.annotate(label, (amount_of_RV_4_5[i], fuel_mass_4_5[i]), textcoords="offset points", xytext=(5,5), ha='center', fontsize=6)
 
 # Labels, title, and legend with reduced font size
-plt.xlabel("Amount of RV", fontsize=10)
-plt.ylabel("Fuel Mass", fontsize=10)
+plt.xlabel("Amount of Rendezvous", fontsize=10)
+plt.ylabel("Fuel Mass (kg)", fontsize=10)
 plt.title("Scatter Plot of Amount of RV vs. Fuel Mass for 1000 kg Wet Mass", fontsize=12)
 plt.legend(fontsize=10)
 
