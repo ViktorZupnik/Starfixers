@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 Js = 1361       #w/m*m solar flux at earth
 sigma = 5.67*10**(-8)       # Boltzmann constant W/m**2K**4
 a = 0.1                  #absoption coef
-epsilon_IR = 0.05         #IR absorption coef
-epsilon = 0.05            #emission coef
+epsilon_IR = 0.07        #IR absorption coef
+epsilon = 0.07            #emission coef
 As = 1                  #sun exposed area
 Ae = 1                  #Earth exposed area
 A_emitted = 4           #emitting area
@@ -23,7 +23,7 @@ Q_sun = a * Js * As              #Solar radiation W
 Q_albedo = a * Js * albedo * Ae *f2             #albedo radiation W
 Q_IR = epsilon_IR * Jir * Ae *f2 #Earth Ir radiation W
 Qemitted = epsilon * sigma * T**4 * A_emitted   #Emitted radiation W
-Q_internal = 0                       #DIssipated energy W
+Q_internal = 50                     #DIssipated energy W
 
 
 def Eclipse_temperature(Qearth, P_dis, epsilon, s, A_emitted):
@@ -38,19 +38,19 @@ def Sunside_temperature(Qsun, Qalb, Qearth, P_dis, epsilon, s, A_emitted):
 
 
 # Spacecraft properties
-mass = 500  # kg
-c = 900    # J/kg·K (e.g., aluminum)
+mass = 1000  # kg
+c = (715*200+200*1200+600*2010)/1000   # J/kg·K (e.g., aluminum)
 
 # Orbit properties
 period = 5760  # sec (90 min)
 eclipse_fraction = 0.375
-dt = 1  # time step in seconds
-t_end = 3 * period  # simulate 3 orbits
+dt = 0.1 # time step in seconds
+t_end = 50* period  # simulate 3 orbits
 
 # Time array
 time = np.arange(0, t_end, dt)
 T = np.zeros_like(time)
-T[0] = 300  # initial temp in K
+T[0] = 310.5 # initial temp in K
 
 # Heat input function
 def Q_in(t):
