@@ -17,7 +17,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 1200 
+M = 1180
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -25,7 +25,7 @@ Sro = -10
 Vros = np.arange(0, 7, 0.1)   # Wider range for Vro
 t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
 T = 465  
-minimum_distance_range = (1.7, 2.3) #Need some sources on this
+minimum_distance_range = (-2.3, -1.7) #Need some sources on this
 
 
 # Function to compute debris delta-V

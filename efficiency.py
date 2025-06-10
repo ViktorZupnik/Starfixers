@@ -14,7 +14,7 @@ def equal_radius_rings(n, radius):
 
     return ring_edges, ring_areas
 
-def gaussian_weight(r, width):
+def gaussian_weight(r, width): # https://descanso.jpl.nasa.gov/SciTechBook/series1/Goebel_08_Chap8_plumes.pdf?utm_source=chatgpt.com p403
     """Unnormalized Gaussian weight based on radial distance."""
     return np.exp(-(r / width)**2)
 
