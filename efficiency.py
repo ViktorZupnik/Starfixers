@@ -83,10 +83,10 @@ if __name__ == "__main__":
     efficiencies3 = [calculate_efficiency_circle(np.radians(40), object_radius, d, 1000, 1) for d in distances]
     efficiencies4 = [calculate_efficiency_circle(half_cone_angle, object_radius, d, 1000, 1) for d in distances]
 
-    plt.plot(distances, efficiencies1, label='diffuse; 15 degrees')
-    plt.plot(distances, efficiencies2, label='diffuse; 40 degrees')
-    plt.plot(distances, efficiencies3, label='specular; 40 degrees')
-    plt.plot(distances, efficiencies4, label='specular; 15 degrees')
+    plt.plot(distances, efficiencies1, label='AC 0.5; HCA 15°')
+    plt.plot(distances, efficiencies2, label='AC 0.5; HCA 40°')
+    plt.plot(distances, efficiencies3, label='AC 1; HCA 40°')
+    plt.plot(distances, efficiencies4, label='AC 1; HCA 15°')
     plt.xlabel('Distance (m)')
     plt.ylabel('Momentum Transfer Efficiency')
     plt.title('Momentum Transfer Efficiency vs Distance')
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     plt.show()
 
 
-    # Rectangular object with width 0.5 m and length 1 m
+    # Rectangular object
     object_width = 3  # Width of the object in meters
     object_length = 11  # Length of the object in meters
     efficiencies5 = [calculate_efficiency_rect(half_cone_angle, object_width, object_length, d, 1000, diffuse) for d in distances]
@@ -103,10 +103,10 @@ if __name__ == "__main__":
     efficiencies7 = [calculate_efficiency_rect(np.radians(40), object_width, object_length, d, 1000, 1) for d in distances]
     efficiencies8 = [calculate_efficiency_rect(half_cone_angle, object_width, object_length, d, 1000, 1) for d in distances]
 
-    plt.plot(distances, efficiencies5, label='diffuse; 15 degrees; rect')
-    plt.plot(distances, efficiencies6, label='diffuse; 40 degrees; rect')
-    plt.plot(distances, efficiencies7, label='specular; 40 degrees; rect')
-    plt.plot(distances, efficiencies8, label='specular; 15 degrees; rect')
+    plt.plot(distances, efficiencies5, label='AC 0.5; HCA 15°')
+    plt.plot(distances, efficiencies6, label='AC 0.5; HCA 40°')
+    plt.plot(distances, efficiencies7, label='AC 1; HCA 40°')
+    plt.plot(distances, efficiencies8, label='AC 1; HCA 15°')
     plt.xlabel('Distance (m)')
     plt.ylabel('Momentum Transfer Efficiency')
     plt.title('Momentum Transfer Efficiency vs Distance (Rectangular Object)')
