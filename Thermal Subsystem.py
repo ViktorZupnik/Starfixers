@@ -3,9 +3,9 @@ from jinja2.nodes import Break
 from matplotlib import pyplot as plt
 Js = 1361       #w/m*m solar flux at earth
 sigma = 5.67*10**(-8)       # Boltzmann constant W/m**2K**4
-a = 0.1                 #absoption coef
-epsilon_IR = 0.03       #IR absorption coef
-epsilon = 0.03           #emission coef
+a = 0.14                #absoption coef
+epsilon_IR = 0.05       #IR absorption coef
+epsilon = 0.05           #emission coef
 As = 1                  #sun exposed area
 Ae = 1                  #Earth exposed area
 A_emitted = 6         #emitting area
