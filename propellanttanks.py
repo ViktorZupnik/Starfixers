@@ -145,7 +145,8 @@ def calculate_mass(D, H, rho, t):
     """
     Calculate the mass of the tank.
     """
-    A = (D/2)**2 * np.pi * 4 + D * np.pi * (H-D)
+    A = (D/2)**2 * np.pi * 6 + D * np.pi * (H)
+
     return A * t * rho
 
 def calculate_bottom_surface_side(D, L):
@@ -285,7 +286,7 @@ if __name__ == "__main__":
 
     print(f"Diameter prop tank: {diameter:.3f} m")
     print(f"Height satellite/prop tank: {height:.3f} m")
-    print(f"Mass prop tank from geometry of shell: {mass:.3f} kg")
+    print(f"Mass prop tank from geometry of shell with the sleeve: {mass:.3f} kg")
     print(f"Mass of the tank from statistics: {mass_stat:.3f} kg")
     print(f"Depth width satellite: {depthwidth:.3f} m")
 
