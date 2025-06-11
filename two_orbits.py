@@ -5,7 +5,7 @@ from efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
-md = [260]*10
+md = [260]*11
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
@@ -17,15 +17,15 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 790 # Initial mass of the spacecraft in kg
+M = 643# Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
-Sro = -10
 Vros = np.arange(3.5, 8, 0.1)   # Wider range for Vro
 t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
 T = 465
 op_dist = 9  
+Sro = -op_dist
 minimum_distance_range = (-4, -3) #Need some sources on this
 
 
@@ -145,7 +145,7 @@ def SmaandE(vm):
     return sma, e
 
 bs = 0 
-for i in range(10):   #10 debris 
+for i in range(11):   #10 debris 
 
     D_Vbdtot= 0
     Vd = np.sqrt(mu/((600+6371)*1000))  

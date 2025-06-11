@@ -7,30 +7,40 @@ import matplotlib.patches as patches
 def calculate_tank_volume(tank_capacity, plot=True):
     """
     Calculate the tank volume based on the tank capacity using linear regression in L.
+    Plots a grey dotted guide from the axes to the estimated point.
     """
-    # data points for tank capacity and corresponding tank volume
+    # Data points for tank capacity and corresponding tank volume
     x = np.array([218, 180, 235, 4.5, 15.4, 30, 75, 154])
     y = np.array([267.6935612, 219.0719684, 263.0456283, 6, 17.5, 37.3, 102.5, 204])
-    
 
     # Linear regression
-    coeffs = np.polyfit(x, y, 1)  # Degree 1 for linear
+    coeffs = np.polyfit(x, y, 1)
     linear_poly = np.poly1d(coeffs)
 
-    # Generate fitted line
-    x_fit = np.linspace(min(x), max(x), 100)
-    y_fit = linear_poly(x_fit)
+    # Predicted volume at given tank_capacity
+    predicted_volume = linear_poly(tank_capacity)
 
-    # Format the equation string
-    eq_text = f"y = {coeffs[0]:.2f}x + {coeffs[1]:.2f}"
     if plot:
-        # Plot data and linear fit
+        # Generate linear fit
+        x_fit = np.linspace(min(x), max(x), 100)
+        y_fit = linear_poly(x_fit)
+
+        # Plot original data and fit
         plt.scatter(x, y, color='blue', label='Data')
         plt.plot(x_fit, y_fit, color='red', label='Linear Fit')
 
-        # Add equation to the plot
+        # Equation text
+        eq_text = f"y = {coeffs[0]:.2f}x + {coeffs[1]:.2f}"
         plt.text(0.05, 0.95, eq_text, transform=plt.gca().transAxes,
-                fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+                 fontsize=10, verticalalignment='top',
+                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+
+        # Plot dotted grey lines to the point (short guides from axes)
+        plt.plot([tank_capacity, tank_capacity], [0, predicted_volume], linestyle=':', color='gray')
+        plt.plot([0, tank_capacity], [predicted_volume, predicted_volume], linestyle=':', color='gray')
+
+        # Mark the point
+        plt.plot(tank_capacity, predicted_volume, 'o', color='black', label=f'({tank_capacity}, {predicted_volume:.1f})')
 
         plt.xlabel('Tank capacity (L)')
         plt.ylabel('Tank volume (L)')
@@ -38,7 +48,8 @@ def calculate_tank_volume(tank_capacity, plot=True):
         plt.legend()
         plt.grid(True)
         plt.show()
-    return linear_poly(tank_capacity)
+
+    return predicted_volume
 
 def calculate_tank_mass(tank_capacity, plot=False):
     x = np.array([218, 180, 235, 4.5, 15.4, 30, 75, 154])
@@ -280,7 +291,7 @@ if __name__ == "__main__":
     # Things to input
     pressure = 30 # in bar, input the necessary tank pressure
     R = 0.5  # D/H ratio, choose yourself
-    capacity = 73.6 # in L, input the necessary tank capacity
+    capacity = 72.5 # in L, input the necessary tank capacity
     t = 0.003  # in m, input the necessary tank thickness
     rho = 2810  # in kg/m^3, input the necessary tank material density; 4430 for ti6al4v
     L = 0.420 # in m, input the free space length; to fit the ADCS in the middle "column" of the satellite
