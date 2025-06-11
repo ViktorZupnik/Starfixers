@@ -8,7 +8,10 @@ epsilon_IR = 0.03       #IR absorption coef
 epsilon = 0.03            #emission coef
 As = 1                  #sun exposed area
 Ae = 1                  #Earth exposed area
-A_emitted = 4           #emitting area
+A_emitted = 3          #emitting area
+A_r = 3
+A_tot = A_emitted + A_r  # Total area for radiation balance
+epsilon_r = 0.88
 Jir = 237              #IR heat flux
 T = 300                 #s/c temperature
 albedo =0.3            #albedo
@@ -22,7 +25,7 @@ f2 = (1-np.sqrt(1-(Re/R02)**2))/2 #Earth fill factor at 381km
 Q_sun = a * Js * As              #Solar radiation W
 Q_albedo = a * Js * albedo * Ae *f2             #albedo radiation W
 Q_IR = epsilon_IR * Jir * Ae *f2 #Earth Ir radiation W
-Qemitted = epsilon * sigma * T**4 * A_emitted   #Emitted radiation W
+Qemitted = epsilon * sigma* ( T**4 * A_emitted + epsilon_r* A_r)  #Emitted radiation W
 Q_internal = 80         # Internal heat W (example)
 
 
@@ -39,7 +42,7 @@ print(f"max sunside temp is:{Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_intern
 sigma = 5.67e-8  # W/m²K⁴
 mass = 1000       # kg (aluminum)
 cp = 900          # J/kg·K (aluminum spec. heat)
-ext_area = 6.0    # m² (cube side ~1.15 m for 1000 kg Al)
+ext_area = A_tot   # m² (cube side ~1.15 m for 1000 kg Al)
 U_MLI = 0.5             # W/m²K (effective heat transfer coeff)
 
 # Environment (600 km LEO)
@@ -48,6 +51,7 @@ T_sunlight = Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sig
 solar_flux = 1361        # W/m²
 orbit_period = 96 * 60   # seconds (96 min)
 eclipse_frac = 0.375    # 35% of orbit in eclipse
+
 
 # Time-stepping simulation (1 orbit)
 time = np.linspace(0, orbit_period, 1000)
@@ -66,7 +70,13 @@ max_T = np.max(T_internal)
 print(f"Internal temp range: {min_T:.1f} K to {max_T:.1f} K")
 
 
-
+# # Optional: Plot
+# plt.plot(time / 60, T_internal)
+# plt.xlabel("Time (min)")
+# plt.ylabel("Internal Temp (K)")
+# plt.title("Internal Temperature Over One Orbit")
+# plt.grid()
+# plt.show()
 # # Search for optimal a and e
 # a_values = np.arange(0.05, 1.05, 0.01)  # absorptivity range
 # e_values = np.arange(0.01, 1.01, 0.01)  # emissivity range
