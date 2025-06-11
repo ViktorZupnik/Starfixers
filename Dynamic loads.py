@@ -38,7 +38,7 @@ print ("bending stress in the middle of a tank: ", bending_stress_at_x(1.065/2, 
 
 g_axial = 8.5
 g_lateral = 3
-M_fuel_tank = 94.4+15.6       #Propellant tank mass (fueld) in kg
+M_fuel_tank = 94.753+15.636       #Propellant tank mass (fueld) in kg
 alpha = 0.8
 v=0.334
 n = 0.6
@@ -46,15 +46,15 @@ E = 71.7*10**9  # Elastic module in Pa
 sigma_yield = 503 * 10**6  # Yield strength in Pa
 M = 100                 #Mass supported by the side panles at launch
 t_p = 0.003              #Panel thickness in m
-w_1 = 0.997                #Panel 1 width in m
-L_1 = 0.82                #Panel 1 length in m (height)
-w_2 = 0.997                 #Panel 2 width in m
+w_1 = 0.998                #Panel 1 width in m
+L_1 = 0.821                #Panel 1 length in m (height)
+w_2 = 0.998                 #Panel 2 width in m
 L_2 = L_1                 #Panel 2 length in m (height)
 r_outer_rod = 0.02          #Outer radius of the support rod in m
 t_rod = 0.002
 
 rho_panels = 2810
-r_outer_tanks = 0.410/2
+r_outer_tanks = 0.411/2
 t_tanks = 0.003
 
 #stiffener dimensions
