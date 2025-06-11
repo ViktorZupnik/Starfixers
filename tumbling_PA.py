@@ -64,7 +64,7 @@ omega_mag  = tumble_rpm * 2 * np.pi / 60  # rad/s ≈ 0.314 rad/s
 
 # Thruster parameters (475 N thruster)
 thrust_force    = 475.0       # [N]
-efficiency      = 0.60        # 60% of that 475 N gives usable torque
+efficiency      = 1        # 60% of that 475 N gives usable torque
       
 #Lever arm calculations       # [m] nominal distance from COM to “hit point”
 lever_armx=8.86-2.32
