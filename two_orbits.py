@@ -11,8 +11,8 @@ md = [260]*10
 
 fs = {                      #Fart settings
     'or': None,  # Radius of the debris object in meters, set to None for rectangular objects
-    'ow': 3,     # Width of the debris object in meters, set to None for circular objects
-    'ol': 11,   # Length of the debris object in meters, set to None for circular objects
+    'ow': 3.1,     # Width of the debris object in meters, set to None for circular objects
+    'ol': 10.9,   # Length of the debris object in meters, set to None for circular objects
     'hca': np.radians(15),  # Half cone angle in radians
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
