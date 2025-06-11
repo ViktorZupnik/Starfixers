@@ -38,24 +38,24 @@ print ("bending stress in the middle of a tank: ", bending_stress_at_x(1.065/2, 
 
 g_axial = 8.5
 g_lateral = 3
-M_fuel_tank = 200       #Propellant tank mass (fueld) in kg
+M_fuel_tank = 81+15.786       #Propellant tank mass (fueld) in kg
 alpha = 0.8
 v=0.334
 n = 0.6
 E = 71.7*10**9  # Elastic module in Pa
 sigma_yield = 503 * 10**6  # Yield strength in Pa
 M = 100                 #Mass supported by the side panles at launch
-t_p = 0.002              #Panel thickness in m
-w_1 = 1.13                 #Panel 1 width in m
-L_1 = 1.065                 #Panel 1 length in m (height)
-w_2 = 1.13                 #Panel 2 width in m
+t_p = 0.003              #Panel thickness in m
+w_1 = 0.965                 #Panel 1 width in m
+L_1 = 0.782                #Panel 1 length in m (height)
+w_2 = 0.965                 #Panel 2 width in m
 L_2 = L_1                 #Panel 2 length in m (height)
 r_outer_rod = 0.02          #Outer radius of the support rod in m
 t_rod = 0.002
 
 rho_panels = 2810
-r_outer_tanks = 0.533/2
-t_tanks = 0.004
+r_outer_tanks = 0.391/2
+t_tanks = 0.003
 
 #stiffener dimensions
 h_stiff = 0.02
@@ -106,8 +106,8 @@ def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E):
 
     return sigma_with_stiff
 
-print("pipe stringer crippling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)/1e6, " MPa"
-      "pipe new sheet", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa")
+print("pipe stringer crippling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)/1e6, " MPa",
+      "omega new sheet", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa")
 
 #Area calculations of panels, tanks, rod and stiffeners
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
@@ -135,11 +135,12 @@ M_stiff = A_stiff * rho_panels *w_1  #Mass of the stiffeners kg
 #print(M_rod)
 M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full   #Mass carried in the axial direction kg
 M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod +4*M_stiff   #Mass carried in the lateral direction kg
-
+M_total = 2*w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 8*M_stiff + 4*M_rod  #Total mass of the structure kg
 #===== Static Loads=======
 
 Axial_static_stress = g_axial*g*M_axial/A_axial
 Lateral_static_stress = g_lateral*g*M_lateral/A_lateral
+print("The total mass of the structure is: ", M_total, " kg")
 print("The axial static stress is: ", Axial_static_stress , " Pa")
 print("The lateral static stress is: ", Lateral_static_stress , " Pa")
 # === Damping ===
