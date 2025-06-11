@@ -38,7 +38,7 @@ print ("bending stress in the middle of a tank: ", bending_stress_at_x(1.065/2, 
 
 g_axial = 8.5
 g_lateral = 3
-M_fuel_tank = 81+15.786       #Propellant tank mass (fueld) in kg
+M_fuel_tank = 81.7+14.25       #Propellant tank mass (fueld) in kg
 alpha = 0.8
 v=0.334
 n = 0.6
