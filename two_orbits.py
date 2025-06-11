@@ -148,16 +148,11 @@ bs = 0
 for i in range(10):   #10 debris 
 
     D_Vbdtot= 0
-    Vd = np.sqrt(mu/((600+6371)*1000))   
-                              #debris velocity in circular orbit
-    if i == 0:
-        print (SmaandE(Vm))
+    Vd = np.sqrt(mu/((600+6371)*1000))  
     b = 0                                                                   
     while D_Vbdtot <= 60.58:                                                   #stop the while loop when delta V applied to debris is enough to deorbit
-        b +=1
-        print(b)                                                                #number of rdv per debris
+        b +=1                                                              #number of rdv per debris
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
-        print(Vro)
         srt = sr(t, T, md[i], M, Sro, Vro, Isp)
         t_under_10 = TimeUnderdistm(srt, t, op_dist)                                   #update time between 2-x m
         D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt)               #Delta V applied to debris for this rdv
