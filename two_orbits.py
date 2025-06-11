@@ -17,15 +17,15 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 637.5# Initial mass of the spacecraft in kg
+M = 643# Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
-Sro = -10
 Vros = np.arange(3.5, 8, 0.1)   # Wider range for Vro
 t = np.linspace(0.1, 15, 150)     # Time vector (start from 0.1 to avoid log(0))
 T = 465
 op_dist = 9  
+Sro = -op_dist
 minimum_distance_range = (-4, -3) #Need some sources on this
 
 
