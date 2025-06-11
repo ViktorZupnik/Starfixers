@@ -129,7 +129,7 @@ K_stiff = E*A_stiff/w_1
 K_total_axial = K_panels_axial + K_Tanks  #Total stiffness in N/m
 K_total_lateral = K_panels_lateral +2*K_rod +4*K_stiff  #Total stiffness in N/m
 
-M_t_full = 150 #ull fuel tank mass kg
+M_t_full = M_fuel_tank  #ull fuel tank mass kg
 M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
 M_stiff = A_stiff * rho_panels *w_1  #Mass of the stiffeners kg
 #print(M_rod)
