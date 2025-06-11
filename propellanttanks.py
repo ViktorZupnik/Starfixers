@@ -268,13 +268,22 @@ def plot_side_view(D, H, depthwidth):
 
     plt.show()
 
+def calculate_hoop_longitudinal_stress(pressure, diameter, thickness):
+    """
+    Calculate the hoop and longitudinal stress in a cylindrical tank. Pressure in bar, output in MPa.
+    """
+    hoop_stress = (pressure/10 * diameter) / (2 * thickness)
+    longitudinal_stress = (pressure/10 * diameter) / (4 * thickness)
+    return hoop_stress, longitudinal_stress
+
 if __name__ == "__main__":
     # Things to input
+    pressure = 30 # in bar, input the necessary tank pressure
     R = 0.5  # D/H ratio, choose yourself
-    capacity = 163.3730938 # in L, input the necessary tank capacity
-    t = 0.002  # in m, input the necessary tank thickness
-    rho = 4430  # in kg/m^3, input the necessary tank material density; 4430 for ti6al4v
-    L = 0.312 # in m, input the free space length; to fit the ADCS in the middle "column" of the satellite
+    capacity = 73.6 # in L, input the necessary tank capacity
+    t = 0.003  # in m, input the necessary tank thickness
+    rho = 2810  # in kg/m^3, input the necessary tank material density; 4430 for ti6al4v
+    L = 0.420 # in m, input the free space length; to fit the ADCS in the middle "column" of the satellite
 
     # Things that are calculated
     volume = calculate_tank_volume(capacity) # in L, input the necessary tank capacity
@@ -282,12 +291,16 @@ if __name__ == "__main__":
     diameter, height = [x / 10 for x in calculate_tank_dimensions(volume, R)]
     mass = calculate_mass(diameter, height, rho, t)  # in kg
     depthwidth = calculate_bottom_surface_side(diameter, L)  # in m
+    hoop, long = calculate_hoop_longitudinal_stress(pressure, diameter, t)  # in MPa
+
 
     print(f"Diameter prop tank: {diameter:.3f} m")
     print(f"Height satellite/prop tank: {height:.3f} m")
     print(f"Mass prop tank from geometry of shell: {mass:.3f} kg")
     print(f"Mass of the tank from statistics: {mass_stat:.3f} kg")
     print(f"Depth width satellite: {depthwidth:.3f} m")
+    print(f"Hoop stress: {hoop:.3f} MPa")
+    print(f"Longitudinal stress: {long:.3f} MPa")
 
     plot_topview(depthwidth, diameter, L)
     plot_side_view(diameter, height, depthwidth)

@@ -8,9 +8,9 @@ half_cone_angle_rad = np.radians(half_cone_angle_deg)
 max_distance = 20
 
 # Spacecraft dimensions
-sc_width = 3
-sc_height = 11
-x_positions = [2, 10]
+sc_width = 11
+sc_height = 3
+x_positions = [3, 9]
 
 # Create 3D figure
 fig = plt.figure(figsize=(10, 8))
@@ -43,7 +43,7 @@ def draw_spacecraft(ax, x_center, width, height):
     ax.add_collection3d(box)
 
     # Label
-    label_y = y0 - 1.0
+    label_y = y0 +9
     ax.text(x_center, label_y, 0,
             'Closest Position' if x_center == x_positions[0] else 'Furthest Position',
             color='black', ha='center')
