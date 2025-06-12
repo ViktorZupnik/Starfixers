@@ -2,11 +2,42 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
+from scipy.interpolate import interp1d, RegularGridInterpolator
 # Constants
 Isp = 342
 g0 = 9.80665  # Standard gravity in m/s^2
 mu = 3.986 * 10**14  # Gravitational parameter for Earth in m^3/s^2
 # Function to compute debris delta-V
+md_vals = np.array([250, 312.5, 375, 437.5, 500])
+h_vals = np.array([550, 560, 570, 580, 590, 600, 610, 620, 630])
+
+# hmin data for each md (each row corresponds to a mass, columns to altitudes)
+hmin_matrix = np.array([
+    [402, 398, 394, 390, 386, 383, 380, 377, 374],  # 250 kg
+    [388, 383, 379, 376, 373, 370, 367, 364, 361],  # 312.5 kg
+    [376, 372, 369, 365, 362, 359, 356, 353, 351],  # 375 kg
+    [367, 363, 360, 356, 353, 350, 348, 345, 343],  # 437.5 kg
+    [359, 355, 352, 349, 346, 343, 341, 338, 336]   # 500 kg
+])
+
+# Interpolator function
+interp_func = RegularGridInterpolator(
+    (md_vals, h_vals),
+    hmin_matrix,
+    method='linear',
+    bounds_error=True
+)
+
+# Function to evaluate hmin
+def get_hmin(md_query, h_query):
+    if not (250 <= md_query <= 500):
+        raise ValueError("md must be between 250 and 500 kg")
+    if not (550 <= h_query <= 630):
+        raise ValueError("h must be between 550 and 630 km")
+    
+    return float(interp_func([[md_query, h_query]]))
+
+
 def DebrisDeltaV(T, eta, t, md):
     return T * eta * t / md
 
@@ -80,9 +111,10 @@ def twoorbit(Vd, Vma,hd):
 
     return dVma
 
-def dvbtot(h):
+def dvbtot(m, h):
     # h in km
     r0 = (h+6371) * 1000  # Initial radius in meters
+    hmin = get_hmin(m, h)
     r1 = (381 + 6371) * 1000  # Final radius in meters
 # Velocity at final radius for elliptical orbit
     dv = np.sqrt(mu / r0) - np.sqrt((2/r0-1/((r0 + r1) / 2)) * mu)  # Delta V required to change from circular orbit to elliptical orbit'
@@ -161,7 +193,7 @@ for k in range(len(indicess)):
             D_Vbdtot= 0
             Vd = np.sqrt(mu/((debris_array[i,0]+6371)*1000))                                            #debris velocity in circular orbit
             b = 0                                                                   
-            while D_Vbdtot <= dvbtot(debris_array[i,0]):                                                   #stop the while loop when delta V applied to debris is enough to deorbit
+            while D_Vbdtot <= dvbtot(debris_array[i, 1], debris_array[i,0]):                                                   #stop the while loop when delta V applied to debris is enough to deorbit
                 b +=1                                                                  #number of rdv per debris
                 # Vro = OptVro(t, T, eta, debris_array[i,1], M, Sro, Vros, Isp)                      #update Vro with new mass
                 Vro = 2.5
@@ -175,7 +207,7 @@ for k in range(len(indicess)):
                 M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))                                         #update our mass after momentum transfer   
                                                 #update time after rdv
                 #check if it was the last burn 
-                if D_Vbdtot >= dvbtot(debris_array[i,0]):
+                if D_Vbdtot >= dvbtot(debris_array[i,1],debris_array[i,0]):
                     time += period(debris_array[i,0], Vma)/2
         
                     break                        
@@ -248,8 +280,6 @@ for k in range(len(indicess)):
                 min_dv_time = time_tot
                 min_mirdv = bs
 
-    
-    
     # print (bs)
     # print(indicess[k])
     if Mi < minimum_Mi and time_tot < 7257600:    #2.8 months in seconds
@@ -260,7 +290,7 @@ for k in range(len(indicess)):
         not_optimal = False
     
 
-print (f'minimum Mass : {minimum_Mi} for sequence {sequence} and total time of {min_dv_time}, number of rdv{min_mirdv}')
+print (f'minimum Mass : {minimum_Mi} for sequence {sequence} and total time of {min_dv_time} months, number of rdv: {min_mirdv}')
 
 
 
