@@ -41,7 +41,7 @@ print ("bending stress in the middle of a tank: ", bending_stress_at_x(1.065/2, 
 
 g_axial = 8.5
 g_lateral = 3
-M_fuel_tank = 95.935+15.758       #Propellant tank mass (fueld) in kg
+M_fuel_tank = 95.474+15.711       #Propellant tank mass (fueld) in kg
 alpha = 0.8
 v = 0.334
 n = 0.6
@@ -49,9 +49,9 @@ E = 71.7*10**9  # Elastic module in Pa
 sigma_yield = 503 * 10**6  # Yield strength in Pa
 M = 100                 #Mass supported by the side panles at launch
 t_p = 0.003              #Panel thickness in m
-w_1 = 1.001               #Panel 1 width in m
-L_1 = 0.825                #Panel 1 length in m (height)
-w_2 = 1.001                 #Panel 2 width in m
+w_1 = 1.00               #Panel 1 width in m
+L_1 = 0.823                #Panel 1 length in m (height)
+w_2 = 1.00                 #Panel 2 width in m
 L_2 = L_1                 #Panel 2 length in m (height)
 r_outer_rod = 0.02          #Outer radius of the support rod in m
 t_rod = 0.002
@@ -89,8 +89,9 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
     sigma_with_stiff_topbottom = (sigma_newsheet_topbottom * b_topbottom * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_topbottom * t_p)
 
     return A_stiff, sigma_stiffener, sigma_with_stiff_side, sigma_with_stiff_topbottom
+print("omega stiffener new sheet sides (2 stiffeners)", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa"
+      "omega stiffener new sheet top/bottom (1stiffener both directions)", omega_stringer(h_stiff, w_stiff, t_stiff)[3]/1e6, " MPa")
 
-print("omega stringer: ", omega_stringer(h_stiff, w_stiff, t_stiff))
 # def halfpipe_stringer(r_outer_tanks, r_outer_rod, t_tanks, sigma_yield, E,C=0.366 ):
 #     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  
 #     Fcy = sigma_yield*A_stiff
