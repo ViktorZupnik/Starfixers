@@ -1,7 +1,6 @@
 import numpy as np
 from jinja2.nodes import Break
 from matplotlib import pyplot as plt
-
 Js = 1361       #w/m*m solar flux at earth
 sigma = 5.67*10**(-8)       # Boltzmann constant W/m**2K**4
 a = 0.14                #absoption coef
@@ -39,6 +38,7 @@ def Sunside_temperature(Qsun, Qalb, Qearth, P_dis, epsilon, s, A_emitted):
     T = ((Qsun + Qalb + Qearth + P_dis)/(epsilon*s*A_emitted))**0.25
     return T
 print(f"max sunside temp is:{Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sigma, A_emitted)}")
+
 sigma = 5.67e-8  # W/m²K⁴
 mass = 1000       # kg (aluminum)
 cp = 900          # J/kg·K (aluminum spec. heat)
@@ -70,7 +70,7 @@ max_T = np.max(T_internal)
 print(f"Internal temp range: {min_T:.1f} K to {max_T:.1f} K")
 
 a1 = [0.65, 0.16, 0.2,0.35,0.27]
-e1 = [0.82, 0.03, 0.15,0.79,0.82]   #BLACK, buffed, lightly oxidized, standard, high emmitance
+e1 = [0.82, 0.03, 0.15,0.79,0.82]
 alpha_epsilon_pairs = list(zip(a1, e1))
 
 for alpha, epsilon in alpha_epsilon_pairs:
