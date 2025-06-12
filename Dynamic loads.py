@@ -69,7 +69,7 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
     # Areas of stiffener segments (based on "whwhw" configuration)
     A24 = h * t        # vertical parts
     A135 = w * t       # horizontal parts
-    A_stiff = 2 * A24 + 3 * A135
+    A_stiff = (2 * A24 + 3 * A135)
 
     # Crippling stresses
     sigma_crippling15 = alpha * (C15 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / w)**2)**(1 - n) * sigma_yield
@@ -89,6 +89,8 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
     sigma_with_stiff_topbottom = (sigma_newsheet_topbottom * b_topbottom * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_topbottom * t_p)
 
     return A_stiff, sigma_stiffener, sigma_with_stiff_side, sigma_with_stiff_topbottom
+
+print("omega stringer: ", omega_stringer(h_stiff, w_stiff, t_stiff))
 # def halfpipe_stringer(r_outer_tanks, r_outer_rod, t_tanks, sigma_yield, E,C=0.366 ):
 #     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  
 #     Fcy = sigma_yield*A_stiff
@@ -257,7 +259,7 @@ ideal, real = cylinder_buckling(E, t_tanks, r_outer_tanks, Kd)
 
 print(f"Ideal buckling stress for cylinder: {ideal/1e6:.4f} MPa")
 print(f"Realistic (with knockdown) for cylinder: {real/1e6:.4f} MPa")
-k = 6 #bucklin fcator for totally clamped plate
+k = 4 #bucklin fcator for totally clamped plate
 nu= 0.334 # poisson's ratio
 SF = 1.1
 
