@@ -17,7 +17,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 645 # Initial mass of the spacecraft in kg
+M = 646 # Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
