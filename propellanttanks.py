@@ -206,7 +206,7 @@ def plot_topview(deptwidth, D, L):
     ax.axhline(0, color='gray', linestyle='--')
     ax.axvline(0, color='gray', linestyle='--')
     ax.set_aspect('equal', adjustable='box')
-    ax.set_title("Top View of Satellite Layout")
+    ax.set_title("Top View of Propellant Tank Layout")
     ax.grid(True)
 
     # Set limits to fit all elements nicely
