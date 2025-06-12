@@ -5,7 +5,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 
-#BLACK, buffed, lightly oxidized, standard, high emmitance
+
 
 
 g = 9.80665
@@ -61,8 +61,8 @@ r_outer_tanks = 0.415/2
 t_tanks = 0.003
 
 #stiffener dimensions
-h_stiff = 0.02
-w_stiff = 0.02
+h_stiff = 0.01
+w_stiff = 0.01
 t_stiff = 0.001
 
 def omega_stringer(h, w, t,C15=0.425, C234=4):
@@ -79,13 +79,16 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
     # Combined crippling stress
     sigma_stiffener= (2 * sigma_crippling15 * A135 + 2 * sigma_crippling24 * A24 + sigma_crippling3 * A135) / A_stiff
     # Stiffener spacing (assuming 1 stiffener in the center, edges supported)
-    b = w_2/ 2
+    b_side= L_1/3
+    b_topbottom = w_2/2
     # Buckling of panel width b
-    sigma_newsheet = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b)**2
+    sigma_newsheet_side = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_side)**2
+    sigma_newsheet_topbottom = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_topbottom)**2
     # Total effective stress of panel + stiffener
-    sigma_with_stiff = (sigma_newsheet * b * t_p + sigma_stiffener * A_stiff) / (A_stiff + b * t_p)
+    sigma_with_stiff_side = (sigma_newsheet_side * b_side * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_side * t_p)
+    sigma_with_stiff_topbottom = (sigma_newsheet_topbottom * b_topbottom * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_topbottom * t_p)
 
-    return A_stiff, sigma_stiffener, sigma_with_stiff
+    return A_stiff, sigma_stiffener, sigma_with_stiff_side, sigma_with_stiff_topbottom
 # def halfpipe_stringer(r_outer_tanks, r_outer_rod, t_tanks, sigma_yield, E,C=0.366 ):
 #     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  
 #     Fcy = sigma_yield*A_stiff
@@ -109,8 +112,8 @@ def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E):
 
     return sigma_with_stiff
 
-print("pipe stringer crippling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)/1e6, " MPa",
-      "omega new sheet", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa")
+print("omega stiffener new sheet sides (2 stiffeners)", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa"
+      "omega stiffener new sheet top/bottom (1stiffener both directions)", omega_stringer(h_stiff, w_stiff, t_stiff)[3]/1e6, " MPa")
 
 #Area calculations of panels, tanks, rod and stiffeners
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
@@ -130,15 +133,15 @@ K_Tanks = E*(np.pi*(r_outer_tanks**2-(r_outer_tanks-t_tanks)**2))/L_1*4
 K_rod = E*(np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2))/L_1*4
 K_stiff = E*A_stiff/w_1
 K_total_axial = K_panels_axial + K_Tanks  #Total stiffness in N/m
-K_total_lateral = K_panels_lateral +2*K_rod +4*K_stiff  #Total stiffness in N/m
+K_total_lateral = K_panels_lateral +2*K_rod +6*K_stiff  #Total stiffness in N/m
 
 M_t_full = M_fuel_tank  #ull fuel tank mass kg
 M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
 M_stiff = A_stiff * rho_panels *w_1  #Mass of the stiffeners kg
 #print(M_rod)
-M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full  #Mass carried in the axial direction kg
-M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 2*M_rod +4*M_stiff   #Mass carried in the lateral direction kg
-M_total = 2*w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 8*M_stiff + 4*M_rod  #Total mass of the structure kg
+M_axial = w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 4*M_t_full+4*M_rod+10*M_stiff   #Mass carried in the axial direction kg
+M_lateral = 2*M_t_full + L_1*w_2*t_p*rho_panels +  rho_panels*(2*w_1*w_2*t_p + 2*w_1*L_1*t_p) + 3*M_rod +10*M_stiff   #Mass carried in the lateral direction kg
+M_total = 2*w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) + 12*M_stiff + 4*M_rod  #Total mass of the structure kg
 #===== Static Loads=======
 
 Axial_static_stress = g_axial*g*M_axial/A_axial

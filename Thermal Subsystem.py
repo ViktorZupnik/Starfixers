@@ -70,7 +70,7 @@ max_T = np.max(T_internal)
 print(f"Internal temp range: {min_T:.1f} K to {max_T:.1f} K")
 
 a1 = [0.65, 0.16, 0.2,0.35,0.27]
-e1 = [0.82, 0.03, 0.15,0.79,0.82]
+e1 = [0.82, 0.03, 0.15,0.79,0.82]   #BLACK, buffed, lightly oxidized, standard, high emmitance
 alpha_epsilon_pairs = list(zip(a1, e1))
 
 for alpha, epsilon in alpha_epsilon_pairs:
