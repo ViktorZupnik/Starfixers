@@ -91,7 +91,7 @@ def omega_stringer(h, w, t,C15=0.425, C234=4):
     return A_stiff, sigma_stiffener, sigma_with_stiff_side, sigma_with_stiff_topbottom
 print("omega stiffener new sheet sides (2 stiffeners)", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa"
       "omega stiffener new sheet top/bottom (1stiffener both directions)", omega_stringer(h_stiff, w_stiff, t_stiff)[3]/1e6, " MPa")
-
+print(omega_stringer(h_stiff, w_stiff, t_stiff)[0], " m^2", omega_stringer(h_stiff, w_stiff, t_stiff)[1])  # Area of the stiffeners
 # def halfpipe_stringer(r_outer_tanks, r_outer_rod, t_tanks, sigma_yield, E,C=0.366 ):
 #     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  
 #     Fcy = sigma_yield*A_stiff
