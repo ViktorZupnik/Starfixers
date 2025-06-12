@@ -17,7 +17,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 658.9 # Initial mass of the spacecraft in kg
+M = 649 # Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -179,7 +179,7 @@ for i in range(11):   #10 debris
 
     #print(f'number of rdv for debris{i+1}: {b}')
 
-    if i < 9:           
+    if i < 10:           
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                 #not take extra transfer into account for last debris (EOL)
         D_V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro
         Vm += D_V_trans              #add transfer velocity to rdv with new debris 
