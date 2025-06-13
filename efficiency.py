@@ -96,8 +96,8 @@ if __name__ == "__main__":
 
 
     # Rectangular object
-    object_width = 100  # Width of the object in meters
-    object_length = 100  # Length of the object in meters
+    object_width = 3.1  # Width of the object in meters
+    object_length = 10.9  # Length of the object in meters
     efficiencies5 = [calculate_efficiency_rect(half_cone_angle, object_width, object_length, d, 1000, diffuse) for d in distances]
     efficiencies6 = [calculate_efficiency_rect(np.radians(40), object_width, object_length, d, 1000, diffuse) for d in distances]
     efficiencies7 = [calculate_efficiency_rect(np.radians(40), object_width, object_length, d, 1000, 1) for d in distances]
