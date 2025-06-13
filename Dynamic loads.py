@@ -113,9 +113,9 @@ def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E):
     # Total effective stress of panel + stiffener
     sigma_with_stiff = (sigma_newsheet * b * t_p + sigma_stiffener * A_stiff) / (A_stiff + b * t_p)
 
-    return sigma_with_stiff
+    return sigma_newsheet, sigma_with_stiff
 
-print("pipe stringer crippling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)/1e6, " MPa",
+print("pipe stringer crippling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)[0], " MPa",
       "omega new sheet", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa")
 
 #Area calculations of panels, tanks, rod and stiffeners
@@ -195,7 +195,7 @@ plt.figure(figsize=(10, 5))
 plt.plot(sol_axial.t*1000, sol_axial.y[0], label='Displacement (m)', color='blue')
 plt.xlabel('Time (ms)')
 plt.ylabel('Axial Displacement (m)')
-plt.title('Axial Displacement Response to 1g Sine Acceleration at 100 Hz')
+plt.title('Axial Displacement Response to 5.13g Acceleration at 925 Hz')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
@@ -205,7 +205,7 @@ plt.figure(figsize=(10, 5))
 plt.plot(sol_lateral.t*1000, sol_lateral.y[0], label='Displacement (m)', color='blue')
 plt.xlabel('Time (ms)')
 plt.ylabel('Lateral Displacement (m)')
-plt.title('Lateral Displacement Response to 1g Sine Acceleration at 100 Hz')
+plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz')
 plt.grid(True)
 plt.tight_layout()
 plt.show()

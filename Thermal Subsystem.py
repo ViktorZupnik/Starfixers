@@ -26,7 +26,7 @@ Q_sun = a * Js * As              #Solar radiation W
 Q_albedo = a * Js * albedo * Ae *f2             #albedo radiation W
 Q_IR = epsilon_IR * Jir * Ae *f2 #Earth Ir radiation W
 Qemitted = epsilon * sigma* ( T**4 * A_emitted + epsilon_r* A_r)  #Emitted radiation W
-Q_internal = 80         # Internal heat W (example)
+Q_internal = 100    # Internal heat W (example) +RANGE OF NUMBERS
 
 
 def Eclipse_temperature(Qearth, P_dis, epsilon, s, A_emitted):
@@ -37,13 +37,20 @@ print (f"min eclipse temp is:{Eclipse_temperature(Q_IR, Q_internal, epsilon, sig
 def Sunside_temperature(Qsun, Qalb, Qearth, P_dis, epsilon, s, A_emitted):
     T = ((Qsun + Qalb + Qearth + P_dis)/(epsilon*s*A_emitted))**0.25
     return T
-print(f"max sunside temp is:{Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sigma, A_emitted)}")
+print(f"max sunside temp is:{Sunside_temperature(Q_sun, Q_albedo, Q_IR,Q_internal, epsilon, sigma, A_emitted)}")
 
 sigma = 5.67e-8  # W/m²K⁴
 mass = 1000       # kg (aluminum)
 cp = 900          # J/kg·K (aluminum spec. heat)
 ext_area = A_tot   # m² (cube side ~1.15 m for 1000 kg Al)
-U_MLI = 0.5             # W/m²K (effective heat transfer coeff)
+U_MLI = 0.5            # W/m²K (effective heat transfer coeff)
+
+
+
+T_inner1 = Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sigma, A_emitted)- Q_internal / (U_MLI * A_emitted)
+print(f"Inner surface temperature in sunlight: {T_inner1:.2f} K")
+T_inner2 = Eclipse_temperature(Q_IR, Q_internal, epsilon, sigma, A_emitted) + Q_internal / (U_MLI * A_emitted)
+print(f"Inner surface temperature in eclipse: {T_inner2:.2f} K")
 
 # Environment (600 km LEO)
 T_eclipse = Eclipse_temperature(Q_IR, Q_internal, epsilon, sigma, A_emitted)       # K
@@ -67,7 +74,7 @@ for i in range(1, len(time)):
 # Results
 min_T = np.min(T_internal)
 max_T = np.max(T_internal)
-print(f"Internal temp range: {min_T:.1f} K to {max_T:.1f} K")
+#print(f"Internal temp range: {min_T:.1f} K to {max_T:.1f} K")
 
 a1 = [0.65, 0.16, 0.2,0.35,0.27]
 e1 = [0.82, 0.03, 0.15,0.79,0.82]
