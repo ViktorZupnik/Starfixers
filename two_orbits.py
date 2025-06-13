@@ -5,7 +5,7 @@ from efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
-md = [260]*11
+md = [260]*10
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
@@ -17,7 +17,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 646 # Initial mass of the spacecraft in kg
+M = 646.2 # Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
