@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load data
-df = pd.read_excel('power_graph.xlsx', index_col=0)
+df = pd.read_excel('Graphs\\power_graph.xlsx', index_col=0)
 
 # Extract and clean the time row
 time_str = df.loc['Time']

@@ -5,7 +5,8 @@ from efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
-md = [260]*11
+debris_amount = 11  # Number of debris objects
+md = [260]*debris_amount
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
@@ -17,7 +18,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 646 # Initial mass of the spacecraft in kg
+M = 646.2 # Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -145,7 +146,7 @@ def SmaandE(vm):
     return sma, e
 
 bs = 0 
-for i in range(11):   #10 debris 
+for i in range(debris_amount):   #10 debris 
 
     D_Vbdtot= 0
     Vd = np.sqrt(mu/((600+6371)*1000))  
@@ -179,7 +180,7 @@ for i in range(11):   #10 debris
 
     #print(f'number of rdv for debris{i+1}: {b}')
 
-    if i < 10:           
+    if i < debris_amount - 1:  # If not the last debris, calculate transfer velocity 
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                 #not take extra transfer into account for last debris (EOL)
         D_V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro
         Vm += D_V_trans              #add transfer velocity to rdv with new debris 
