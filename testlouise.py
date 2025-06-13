@@ -22,7 +22,21 @@ def TimeUnderdistm(srt, t, dist):
         if srt[i - 1] > -dist and srt[i] < -dist:
             return t[i]
     return None
-
+mu = 3.986e14  # Gravitational parameter for Earth in m^3/s^2
+def twoorbit(Vd, Vm):                    
+    ad = 1/(2/(600000+6371000)-Vd**2/mu)                         
+    Td = 2*np.pi*np.sqrt(ad**3/mu)                         
+    am = 1/(2/(600000+6371000)-Vm**2/mu)                          
+    print(am) #check correct semi major axis
+    Tm = 2*np.pi*np.sqrt(am**3/mu)                          
+    print(Tm)
+    T_desired = 2*Td-Tm                                     
+    a_desired = ((T_desired/(2*np.pi))**(2/3))*mu**(1/3)    
+    V_desired = np.sqrt(mu*(2/(600000+6371000)-1/a_desired))      
+    dvm = Vm-V_desired                                     
+    print("Delta V required to meet debris:", dvm)          #check correct sign of delta V
+    return dvm
+twoorbit(7200, 7503.16)  # Example call to the twoorbit function
 def calculate_DV_debris(T, t, md, t_under_10, srt,eta = 0.2):
     """
     Calculate the delta-V applied to debris.
@@ -33,7 +47,20 @@ def calculate_DV_debris(T, t, md, t_under_10, srt,eta = 0.2):
     for s in srt:
         DV += T * eta * (t[1]-t[0]) / md
     return DV
+def test_sr_basic():
+    t = np.array([0,2,4,6,7])
+    T = 465
+    md = 260
+    M = 646.2
+    Sro = -9
+    Vro = 3.3
+    Isp = 342
 
+    result = sr(t, T, md, M, Sro, Vro, Isp)
+    print(result)
+    # Expected value calculated manually or from a reliable source
+    expected_value = np.array([-9.0, -4.55478, -4.41992,-8.59667,-12.30228])  #values from the plot on desmos
+    assert np.allclose(result, expected_value)  # Check first few values for correctness
 #test passes if the function returns the time when the underdistance occurs
 def test_TimeUnderdistm_basic():
     t = np.linspace(0.1, 15, 2000)
@@ -90,3 +117,10 @@ def test_calculate_DV_debris_zero_efficiency(monkeypatch):
 
     DV = calculate_DV_debris(T, t, md, t_under_10, srt,eta=0)
     assert np.isclose(DV, 0.0)
+#test with hand calculations and internet tools
+def test_twoorbit():
+    Vd = 7200
+    Vm = 7503.16
+    expected_dvm = 690.2811422079149  # Expected delta V to meet debris
+    dvm = twoorbit(Vd, Vm)
+    assert np.isclose(dvm, expected_dvm, atol=1e-2)  # Allow a small tolerance for floating point comparison
