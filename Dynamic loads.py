@@ -55,7 +55,7 @@ w_2 = 1.00                 #Panel 2 width in m
 L_2 = L_1                 #Panel 2 length in m (height)
 r_outer_rod = 0.02          #Outer radius of the support rod in m
 t_rod = 0.002
-
+print(L_1*w_1*4+w_1*w_2*2)
 rho_panels = 2810
 r_outer_tanks = 0.412/2
 t_tanks = 0.003
