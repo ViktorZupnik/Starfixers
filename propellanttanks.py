@@ -291,7 +291,7 @@ if __name__ == "__main__":
     # Things to input
     pressure = 30 # in bar, input the necessary tank pressure
     R = 0.5  # D/H ratio, choose yourself
-    capacity = 75.0 # in L, input the necessary tank capacity
+    capacity = 73.0 # in L, input the necessary tank capacity
     t = 0.003  # in m, input the necessary tank thickness
     rho = 2810  # in kg/m^3, input the necessary tank material density; 4430 for ti6al4v
     L = 0.420 # in m, input the free space length; to fit the ADCS in the middle "column" of the satellite
