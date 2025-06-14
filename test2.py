@@ -5,8 +5,8 @@ from efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
-debris_amount = 11  # Number of debris objects
-md = [260]*debris_amount
+debris_amount = 1  # Number of debris objects
+md = [20]*debris_amount
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
@@ -35,7 +35,7 @@ def DebrisDeltaV(T, eta, t, md):
     return T * eta * t / md
 
 # Function to compute optimal Vro for a given thrust
-def OptVro(t, T, md, M, Sro, Vros, Isp, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+def OptVro(t, T, md, M, Sro, Vros, Isp):
     found = False
     step = Vros[1] - Vros[0]
     start = Vros[0]
@@ -51,7 +51,7 @@ def OptVro(t, T, md, M, Sro, Vros, Isp, half_cone_angle=fs['hca'], resolution=fs
                 term1 = Sro + Vro * i
                 if not st:
                     s = Sro
-                eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+                eta = 0.2
                 term2 = -T * eta / (2 * md) * i**2
                 term3 = -Isp * g0 * (
                     (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + i + np.log(M) * i
@@ -69,7 +69,7 @@ def OptVro(t, T, md, M, Sro, Vros, Isp, half_cone_angle=fs['hca'], resolution=fs
     return None
 
 # Function to compute s_r(t)
-def sr(t, T, md, M, Sro, Vro, Isp, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+def sr(t, T, md, M, Sro, Vro, Isp):
     m_dot = T / (Isp * g0)
     sr = []
     for i in range(len(t)):
@@ -77,7 +77,7 @@ def sr(t, T, md, M, Sro, Vro, Isp, half_cone_angle=fs['hca'], resolution=fs['res
         term1 = Sro + Vro * t[i]
         if not sr:
             s = Sro
-        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+        eta = 0.2
         term2 = -T * eta / (2 * md) * t[i]**2
         term3 = -Isp * g0 * (
             (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + t[i] + np.log(M) * t[i]
@@ -93,7 +93,7 @@ def TimeUnderdistm(srt, t, dist):
             return t[i]
     return None
 
-def calculate_DV_debris(T, t, md, t_under_10, srt, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+def calculate_DV_debris(T, t, md, t_under_10, srt):
     """
     Calculate the delta-V applied to debris.
     """
@@ -101,7 +101,7 @@ def calculate_DV_debris(T, t, md, t_under_10, srt, half_cone_angle=fs['hca'], re
     srt = srt[t <= t_under_10][:-1]  # Filter srt to only include times up to t_under_10
 
     for s in srt:
-        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+        eta = 0.2
         DV += T * eta * (t[1]-t[0]) / md
     return DV
 
@@ -157,6 +157,7 @@ for i in range(debris_amount):   #10 debris
         srt = sr(t, T, md[i], M, Sro, Vro, Isp)
         t_under_10 = TimeUnderdistm(srt, t, op_dist)                                   #update time between 2-x m
         D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt)               #Delta V applied to debris for this rdv
+        assert D_Vbd = 12.55499         #checked with hand calculation
         Vd = Vd - D_Vbd  
         D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
         D_Vbm = Isp*g0*np.log(M/(M-t_under_10*T/(Isp*g0)))                      #Delta V applied to ourselves during burn
