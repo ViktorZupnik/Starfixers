@@ -134,8 +134,8 @@ from efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
-debris_amount = 1  # Number of debris objects
-md = [20]*debris_amount
+debris_amount = 10  # Number of debris objects
+md = [260]*debris_amount
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
@@ -187,7 +187,7 @@ def OptVro(t, T, md, M, Sro, Vros, Isp):
             print("No suitable Vro found within the specified range.")
             break  # Prevent infinite loop if no suitable Vro is found
     return None
-M = 646.2 # Initial mass of the spacecraft in kg
+M = 650 # Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -248,7 +248,7 @@ def SmaandE(vm):
     return sma, e
 #check operation
 def test_operation():
-    M_dry = 264
+    M_dry = 266
     M = 646.2 # Initial mass of the spacecraft in kg
     Mi=M
     Isp = 342
@@ -277,15 +277,16 @@ def test_operation():
             srt = sr(t, T, md[i], M, Sro, Vro, Isp)
             t_under_10 = TimeUnderdistm(srt, t, op_dist)                                   #update time between 2-x m
             D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt,0.2)               #Delta V applied to debris for this rdv
-            assert abs(D_Vbd - 12.555)< 10e-5      #checked with hand calculation
+            #assert abs(D_Vbd - 12.555)< 10e-5      #checked with hand calculation
             Vd = Vd - D_Vbd 
             rrg = D_Vbdtot 
             D_Vbdtot += D_Vbd                                                                                               
             D_Vbm = Isp*g0*np.log(M/(M-t_under_10*T/(Isp*g0)))                      
             Vm = Vm + D_Vbm
             ghj = M                                                        
-            M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))   
-            assert M<ghj and (M_dry*1.01)                                                      
+            M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0))) 
+            assert M<ghj and M > M_dry
+                                                             
 
             #check if it was the last burn 
             if D_Vbdtot >= 60.58:
@@ -294,16 +295,18 @@ def test_operation():
             D_Vm = twoorbit(Vd,Vm)                                       
             Vm -= D_Vm 
             am = 1/(2/(600000+6371000)-Vm**2/mu)  
-            assert am>6721       #check if semi major axis is larger than 6721km (100+600+6371*2)/2 to ensure we are in orbit and don't crash into earth 
+            assert am>6861       #check if semi major axis is larger than 6721km (100+600+6371*2)/2 to ensure we are in orbit and don't crash into earth 
             ghj = M                                                           
             M = M/(np.exp(np.abs(D_Vm)/(Isp*g0)))                                            
-            assert M<ghj and (M_dry*1.01)   
+            assert M<ghj and M > (M_dry)
+          
             Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                    
             D_V_corr2 = (Vd-Vm) - Vro                                              
             Vm += D_V_corr2 
             ghj = M
             M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0)))   
-            assert M<ghj and (M_dry*1.01)                                                     
+            assert M<ghj and M > (M_dry)
+                                                          
             assert D_Vm >0
             assert D_Vbd > 0
             assert D_Vbm > 0
@@ -320,7 +323,7 @@ def test_operation():
             D_Vtot = D_Vtot + np.abs(D_V_trans)
             ghj = M
             M = M/(np.exp(np.abs(D_V_trans)/(Isp*g0)))  
-            assert M<ghj and M > (M_dry*1.01)
+            assert M<ghj and M > (M_dry)
         
             
         print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres

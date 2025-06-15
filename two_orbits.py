@@ -5,7 +5,7 @@ from efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
-debris_amount = 11  # Number of debris objects
+debris_amount = 10  # Number of debris objects
 md = [260]*debris_amount
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
@@ -28,7 +28,7 @@ T = 465
 op_dist = 9  
 Sro = -op_dist
 minimum_distance_range = (-4, -3) #Need some sources on this
-
+M_dry = 264
 
 # Function to compute debris delta-V
 def DebrisDeltaV(T, eta, t, md):
@@ -162,18 +162,23 @@ for i in range(debris_amount):   #10 debris
         D_Vbm = Isp*g0*np.log(M/(M-t_under_10*T/(Isp*g0)))                      #Delta V applied to ourselves during burn
         Vm = Vm + D_Vbm                                                        #update our spacecraft velocity
         M = M/(np.exp(np.abs(D_Vbm)/(Isp*g0)))                                         #update our mass after momentum transfer   
-
+        if M < M_dry:  
+            print("problem")                                              #check if we have enough fuel left
         #check if it was the last burn 
         if D_Vbdtot >= 60.58:
            print('last burn')
            break                                      
         D_Vm = twoorbit(Vd,Vm)                                                 #see function explanation above
         Vm -= D_Vm                                                             #update velocity
-        M = M/(np.exp(np.abs(D_Vm)/(Isp*g0)))                                          #update mass
+        M = M/(np.exp(np.abs(D_Vm)/(Isp*g0))) 
+        if M < M_dry:  
+            print("problem")                                           #update mass
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                    #update Vro
         D_V_corr2 = (Vd-Vm) - Vro                                              #correction to achieve desired relative velocity
         Vm += D_V_corr2 
-        M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0)))                             #update Vm again to prepare for new momentum transfer
+        M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0))) 
+        if M < M_dry:  
+            print("problem")                              #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr2)
         
     bs += b
@@ -186,6 +191,8 @@ for i in range(debris_amount):   #10 debris
         Vm += D_V_trans              #add transfer velocity to rdv with new debris 
         D_Vtot = D_Vtot + np.abs(D_V_trans)
         M = M/(np.exp(np.abs(D_V_trans)/(Isp*g0)))  
+        if M < M_dry:  
+            print("problem")  
      
         
     print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres
