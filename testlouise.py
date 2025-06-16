@@ -187,7 +187,7 @@ def OptVro(t, T, md, M, Sro, Vros, Isp):
             print("No suitable Vro found within the specified range.")
             break  # Prevent infinite loop if no suitable Vro is found
     return None
-M = 650 # Initial mass of the spacecraft in kg
+M = 646.2 # Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -248,7 +248,7 @@ def SmaandE(vm):
     return sma, e
 #check operation
 def test_operation():
-    M_dry = 266
+    M_dry = 263
     M = 646.2 # Initial mass of the spacecraft in kg
     Mi=M
     Isp = 342
