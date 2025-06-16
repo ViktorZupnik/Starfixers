@@ -107,7 +107,7 @@ print(omega_stringer(h_stiff, w_stiff, t_stiff)[0], " m^2", omega_stringer(h_sti
 def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E): 
     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)   
     sigma_stiffener = alpha * (2 / sigma_yield * E *0.605*t_tanks/r_outer_tanks)**(1 - n) * sigma_yield
-    b = w_2-2*r_outer_tanks  # Effective width of the panel
+    b = r_outer_tanks  # Effective width of the panel
     # Buckling of panel width b
     sigma_newsheet = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b)**2 #reduced width of the panel
     # Total effective stress of panel + stiffener
@@ -115,7 +115,7 @@ def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E):
 
     return sigma_newsheet, sigma_with_stiff
 
-print("pipe stringer crippling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)[0])
+print("small wall buckling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)[0])
 
 #Area calculations of panels, tanks, rod and stiffeners
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
@@ -131,11 +131,14 @@ K_panel_3 = E*w_1*t_p/w_2
 K_panel_4 = E*L_1*t_p/w_2
 K_panels_axial = 2*K_panel_1 + 2*K_panel_2    #4 Panel stiffness in N/m
 K_panels_lateral = 2*K_panel_3 + 2*K_panel_4
+K_panels_critical = ((3*E*w_1*t_p**3/12)/L_1**3)+((3*E*w_2**3*t_p/12)/L_1**3) #Critical buckling stiffness in N/m
 K_Tanks = E*(np.pi*(r_outer_tanks**2-(r_outer_tanks-t_tanks)**2))/L_1*4
+K_Tanks_critical = (3*E*(np.pi/4*(r_outer_tanks**4-(r_outer_tanks-t_tanks)**4))/L_1**3)
 K_rod = E*(np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2))/ (L_1)*4
 K_stiff = E*A_stiff/w_1
 K_total_axial = K_panels_axial + K_Tanks  #Total stiffness in N/m
 K_total_lateral = K_panels_lateral +2*K_rod +6*K_stiff  #Total stiffness in N/m
+#K_total_lateral = 2* K_panels_critical + 4*K_Tanks_critical
 
 M_t_full = 150 #full fuel tank mass kg
 M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
@@ -148,8 +151,12 @@ M_total = 2*w_1*w_2*t_p*rho_panels + rho_panels*(2*w_1*L_1*t_p + 2*w_2*L_1*t_p) 
 print(M_total)
 Axial_static_stress = g_axial*g*M_axial/A_axial
 Lateral_static_stress = g_lateral*g*M_lateral/A_lateral
+critical_stress_lat = (M_axial*3*g*L_1*w_2/2)/((w_2**3*t_p/12)/L_1**3)
 print("The axial static stress is: ", Axial_static_stress , " Pa")
 print("The lateral static stress is: ", Lateral_static_stress , " Pa")
+print("The critical stress in lateral direction is: ", critical_stress_lat, " Pa")
+
+
 # === Damping ===
 zeta = 0.01  # 1% damping ratio
 omega_n_axial = np.sqrt(K_total_axial / M_axial)  # rad/s
@@ -179,7 +186,7 @@ def systemlateral(t, y):
     x, v = y  # displacement and velocity
     a_t = A_force_lateral * np.sin(omega_drive_lateral * t)
     dxdt = v
-    dvdt = (a_t - C_lateral* v - K_total_lateral * x) / M_lateral
+    dvdt = (a_t - C_lateral* v - K_total_lateral * x) / M_axial
     return [dxdt, dvdt]
 
 # Initial conditions: [displacement, velocity]
@@ -204,7 +211,7 @@ plt.figure(figsize=(10, 5))
 plt.plot(sol_lateral.t*1000, sol_lateral.y[0], label='Displacement (m)', color='blue')
 plt.xlabel('Time (ms)')
 plt.ylabel('Lateral Displacement (m)')
-plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz')
+plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz - Bottom Clamped')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
@@ -219,6 +226,7 @@ print(f"Maximum Lateral Displacement: {max_disp_lateral:.6e} m")
 # === Compute Strain and Stress ===
 # For axial: L = L_1 (height of panel)
 # For lateral: L = w_2 (width of panel)
+max_root_stress = (3*E*max_disp_lateral*w_2/2)/L_1**2
 strain_axial = max_disp_axial / L_1
 strain_lateral = max_disp_lateral / w_1
 
@@ -227,6 +235,7 @@ stress_lateral = E * strain_lateral
 
 print(f"Axial Panel Stress: {stress_axial:.2f} Pa")
 print(f"Lateral Panel Stress: {stress_lateral:.2f} Pa")
+print(f"Max Root Stress: {max_root_stress:.2f} Pa")
 
 
 
