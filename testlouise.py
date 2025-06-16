@@ -18,6 +18,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
+
 def sr(t, T, md, M, Sro, Vro, Isp):
     m_dot = T / (Isp * g0)
     sr = []
@@ -34,7 +35,38 @@ def sr(t, T, md, M, Sro, Vro, Isp):
         s = term1 + term2 + term3
         sr.append(s)
     return np.array(sr)
-
+def OptVro(t, T, md, M, Sro, Vros, Isp):
+    found = False
+    step = Vros[1] - Vros[0]
+    start = Vros[0]
+    stop = Vros[-1]
+    while not found:    
+        for Vro in Vros:
+            st = []
+            for i in t:
+                m_dot = T / (Isp * g0)
+                m_i = M - m_dot * i
+                if m_i <= 0:
+                    break
+                term1 = Sro + Vro * i
+                if not st:
+                    s = Sro
+                eta = 0.2
+                term2 = -T * eta / (2 * md) * i**2
+                term3 = -Isp * g0 * (
+                    (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + i + np.log(M) * i
+                )
+                s = term1 + term2 + term3
+                st.append(s)
+            if st and minimum_distance_range[0] <= np.max(st) <= minimum_distance_range[1]:
+                found = True
+                return Vro
+        step /= 2
+        Vros = np.arange(start, stop, step)
+        if step < 0.001:
+            print("No suitable Vro found within the specified range.")
+            break  # Prevent infinite loop if no suitable Vro is found
+    return None
 def TimeUnderdistm(srt, t, dist):
     for i in range(1, len(t)):
         if srt[i - 1] > -dist and srt[i] < -dist:
@@ -66,6 +98,19 @@ def calculate_DV_debris(T, t, md, t_under_10, srt, eta=0.2):
     for s in srt:
         DV += T * eta * (t[1]-t[0]) / md
     return DV
+
+def test_vro():
+    t = np.linspace(0.1, 15, 150)  # Time array
+    T = 327.54
+    md = 293.2
+    M = 552.7
+    Isp = 285.1
+    Sro = -8.3
+    Vros = np.arange(2, 5, 0.1)  # Range of Vro values to test
+    Vro = OptVro(t, T, md, M, Sro, Vros, Isp)
+    expected = 2.7
+    assert abs(Vro - expected) < 1e-2
+
 def test_sr_basic():
     t = np.array([0,2,4,6,7])
     T = 465
@@ -218,39 +263,6 @@ def calculate_DV_debriseff(T, t, md, t_under_10, srt, half_cone_angle=fs['hca'],
 def DebrisDeltaV(T, eta, t, md):
     return T * eta * t / md
 
-# Function to compute optimal Vro for a given thrust
-def OptVro(t, T, md, M, Sro, Vros, Isp):
-    found = False
-    step = Vros[1] - Vros[0]
-    start = Vros[0]
-    stop = Vros[-1]
-    while not found:    
-        for Vro in Vros:
-            st = []
-            for i in t:
-                m_dot = T / (Isp * g0)
-                m_i = M - m_dot * i
-                if m_i <= 0:
-                    break
-                term1 = Sro + Vro * i
-                if not st:
-                    s = Sro
-                eta = 0.2
-                term2 = -T * eta / (2 * md) * i**2
-                term3 = -Isp * g0 * (
-                    (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + i + np.log(M) * i
-                )
-                s = term1 + term2 + term3
-                st.append(s)
-            if st and minimum_distance_range[0] <= np.max(st) <= minimum_distance_range[1]:
-                found = True
-                return Vro
-        step /= 2
-        Vros = np.arange(start, stop, step)
-        if step < 0.001:
-            print("No suitable Vro found within the specified range.")
-            break  # Prevent infinite loop if no suitable Vro is found
-    return None
 M = 646.2 # Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
