@@ -17,7 +17,7 @@ fs = {                      #Fart settings
     'res': 50,      # Resolution for the efficiency calculation
     'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
     }
-M = 643# Initial mass of the spacecraft in kg
+M = 646.2# Initial mass of the spacecraft in kg
 Mi=M
 Isp = 342
 g0 = 9.80665
@@ -27,6 +27,7 @@ T = 465
 op_dist = 9  
 Sro = -op_dist
 minimum_distance_range = (-4, -3) #Need some sources on this
+pointing_error_angle = np.radians(6) # Offset in degrees in X-direction of thruster plume
 
 
 # Function to compute debris delta-V
@@ -50,7 +51,7 @@ def OptVro(t, T, md, M, Sro, Vros, Isp, half_cone_angle=fs['hca'], resolution=fs
                 term1 = Sro + Vro * i
                 if not st:
                     s = Sro
-                eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+                eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, 0, object_radius=object_radius, object_width=object_width, object_length=object_length)
                 term2 = -T * eta / (2 * md) * i**2
                 term3 = -Isp * g0 * (
                     (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + i + np.log(M) * i
@@ -68,7 +69,7 @@ def OptVro(t, T, md, M, Sro, Vros, Isp, half_cone_angle=fs['hca'], resolution=fs
     return None
 
 # Function to compute s_r(t)
-def sr(t, T, md, M, Sro, Vro, Isp, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+def sr(t, T, md, M, Sro, Vro, Isp, pointing_error_angle, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
     m_dot = T / (Isp * g0)
     sr = []
     for i in range(len(t)):
@@ -76,13 +77,16 @@ def sr(t, T, md, M, Sro, Vro, Isp, half_cone_angle=fs['hca'], resolution=fs['res
         term1 = Sro + Vro * t[i]
         if not sr:
             s = Sro
-        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, pointing_error_angle, object_radius=object_radius, object_width=object_width, object_length=object_length)
         term2 = -T * eta / (2 * md) * t[i]**2
         term3 = -Isp * g0 * (
             (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + t[i] + np.log(M) * t[i]
         )
         s = term1 + term2 + term3
         sr.append(s)
+    
+    
+
     return np.array(sr)
 
 # Time when s_r(t) crosses -5 again
@@ -92,7 +96,7 @@ def TimeUnderdistm(srt, t, dist):
             return t[i]
     return None
 
-def calculate_DV_debris(T, t, md, t_under_10, srt, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+def calculate_DV_debris(T, t, md, t_under_10, srt, pointing_error_angle, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
     """
     Calculate the delta-V applied to debris.
     """
@@ -100,7 +104,7 @@ def calculate_DV_debris(T, t, md, t_under_10, srt, half_cone_angle=fs['hca'], re
     srt = srt[t <= t_under_10][:-1]  # Filter srt to only include times up to t_under_10
 
     for s in srt:
-        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, pointing_error_angle, object_radius=object_radius, object_width=object_width, object_length=object_length)
         DV += T * eta * (t[1]-t[0]) / md
     return DV
 
@@ -145,17 +149,17 @@ def SmaandE(vm):
     return sma, e
 
 bs = 0 
-for i in range(11):   #10 debris 
+for i in range(10):   #10 debris 
 
     D_Vbdtot= 0
     Vd = np.sqrt(mu/((600+6371)*1000))  
     b = 0                                                                   
     while D_Vbdtot <= 60.58:                                                   #stop the while loop when delta V applied to debris is enough to deorbit
         b +=1                                                              #number of rdv per debris
-        Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
-        srt = sr(t, T, md[i], M, Sro, Vro, Isp)
+        Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)  
+        srt = sr(t, T, md[i], M, Sro, Vro, Isp, pointing_error_angle)
         t_under_10 = TimeUnderdistm(srt, t, op_dist)                                   #update time between 2-x m
-        D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt)               #Delta V applied to debris for this rdv
+        D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt, pointing_error_angle)               #Delta V applied to debris for this rdv
         Vd = Vd - D_Vbd  
         D_Vbdtot += D_Vbd                                                      #update total debris velocity change                                              
         D_Vbm = Isp*g0*np.log(M/(M-t_under_10*T/(Isp*g0)))                      #Delta V applied to ourselves during burn
@@ -174,10 +178,12 @@ for i in range(11):   #10 debris
         Vm += D_V_corr2 
         M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0)))                             #update Vm again to prepare for new momentum transfer
         D_Vtot = D_Vtot + D_Vm + D_Vbm + np.abs(D_V_corr2)
+
+        
         
     bs += b
 
-    #print(f'number of rdv for debris{i+1}: {b}')
+    print(f'number of rdv for debris{i+1}: {b}')
 
     if i < 9:           
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                 #not take extra transfer into account for last debris (EOL)
@@ -190,7 +196,7 @@ for i in range(11):   #10 debris
     print(f'delta-V {i+1}: {D_Vtot}', 'md', md[i])                         # total delta V for all debris and all manoeuvres
 
 fuel_mass = Mi - M                         
-print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
+print(f'required fuel mass:{fuel_mass}', f'and unused mass is {M}' )
 print (bs)
 
 #----------------------Run optimization------------------------------
