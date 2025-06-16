@@ -1,5 +1,23 @@
-import numpy as np 
+
+"version 2"
+import numpy as np
+import matplotlib.pyplot as plt
+from efficiency import calculate_efficiency
+
+# Constants
+#Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
+debris_amount = 10  # Number of debris objects
+md = [260]*debris_amount 
+
 g0 = 9.80665
+fs = {                      #Fart settings
+    'or': None,  # Radius of the debris object in meters, set to None for rectangular objects
+    'ow': 3.1,     # Width of the debris object in meters, set to None for circular objects
+    'ol': 10.9,   # Length of the debris object in meters, set to None for circular objects
+    'hca': np.radians(15),  # Half cone angle in radians
+    'res': 50,      # Resolution for the efficiency calculation
+    'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
+    }
 def sr(t, T, md, M, Sro, Vro, Isp):
     m_dot = T / (Isp * g0)
     sr = []
@@ -125,28 +143,74 @@ def test_twoorbit():
     expected_dvm = 690.2811422079149  # Expected delta V to meet debris
     dvm = twoorbit(Vd, Vm)
     assert np.isclose(dvm, expected_dvm, atol=1e-2)  # Allow a small tolerance for floating point comparison
+# Function to compute optimal Vro for a given thrust
+def OptVroeff(t, T, md, M, Sro, Vros, Isp, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+    found = False
+    step = Vros[1] - Vros[0]
+    start = Vros[0]
+    stop = Vros[-1]
+    while not found:    
+        for Vro in Vros:
+            st = []
+            for i in t:
+                m_dot = T / (Isp * g0)
+                m_i = M - m_dot * i
+                if m_i <= 0:
+                    break
+                term1 = Sro + Vro * i
+                if not st:
+                    s = Sro
+                eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+                term2 = -T * eta / (2 * md) * i**2
+                term3 = -Isp * g0 * (
+                    (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + i + np.log(M) * i
+                )
+                s = term1 + term2 + term3
+                st.append(s)
+            if st and minimum_distance_range[0] <= np.max(st) <= minimum_distance_range[1]:
+                found = True
+                return Vro
+        step /= 2
+        Vros = np.arange(start, stop, step)
+        if step < 0.001:
+            print("No suitable Vro found within the specified range.")
+            break  # Prevent infinite loop if no suitable Vro is found
+    return None
+
+# Function to compute s_r(t)
+def sreff(t, T, md, M, Sro, Vro, Isp, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+    m_dot = T / (Isp * g0)
+    sr = []
+    for i in range(len(t)):
+        m_i = M - m_dot * t[i]
+        term1 = Sro + Vro * t[i]
+        if not sr:
+            s = Sro
+        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+        term2 = -T * eta / (2 * md) * t[i]**2
+        term3 = -Isp * g0 * (
+            (m_i * np.log(m_i) - M * np.log(M)) / (T / (Isp * g0)) + t[i] + np.log(M) * t[i]
+        )
+        s = term1 + term2 + term3
+        sr.append(s)
+    return np.array(sr)
 
 
-"version 2"
-import numpy as np
-import matplotlib.pyplot as plt
-from efficiency import calculate_efficiency
+def calculate_DV_debriseff(T, t, md, t_under_10, srt, half_cone_angle=fs['hca'], resolution=fs['res'], diffuse=fs['dif'], object_radius=fs['or'], object_width=fs['ow'], object_length=fs['ol']):
+    """
+    Calculate the delta-V applied to debris.
+    """
+    DV = 0
+    srt = srt[t <= t_under_10][:-1]  # Filter srt to only include times up to t_under_10
 
-# Constants
-#Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
-debris_amount = 10  # Number of debris objects
-md = [260]*debris_amount
+    for s in srt:
+        eta = calculate_efficiency(half_cone_angle, s, resolution, diffuse, object_radius=object_radius, object_width=object_width, object_length=object_length)
+        DV += T * eta * (t[1]-t[0]) / md
+    return DV
+
 #520kg debris, 1340kg fuel, 470kg dry
 #260kg debris, 778kg fuel, 470kg dry
 
-fs = {                      #Fart settings
-    'or': None,  # Radius of the debris object in meters, set to None for rectangular objects
-    'ow': 3.1,     # Width of the debris object in meters, set to None for circular objects
-    'ol': 10.9,   # Length of the debris object in meters, set to None for circular objects
-    'hca': np.radians(15),  # Half cone angle in radians
-    'res': 50,      # Resolution for the efficiency calculation
-    'dif': 0.5,        # Diffusivity factor, can be adjusted based on exhaust characteristics
-    }
 
 
 
@@ -248,7 +312,7 @@ def SmaandE(vm):
     return sma, e
 #check operation
 def test_operation():
-    M_dry = 263
+    M_dry = 264
     M = 646.2 # Initial mass of the spacecraft in kg
     Mi=M
     Isp = 342
@@ -261,7 +325,7 @@ def test_operation():
     minimum_distance_range = (-4, -3) #Need some sources on this
     bs = 0 
     Vd = np.sqrt(3.986*10**14/((600+6371)*1000))
-    Vro = OptVro(t, T, md[0], M, Sro, Vros, Isp) 
+    Vro = OptVroeff(t, T, md[0], M, Sro, Vros, Isp) 
     Vm = Vd - Vro
     D_Vtot = np.abs(Vro)
     M = M/(np.exp(np.abs(Vro)/(Isp*g0)))
@@ -273,10 +337,10 @@ def test_operation():
         b = 0                                                                   
         while D_Vbdtot <= 60.58:                                                   #stop the while loop when delta V applied to debris is enough to deorbit
             b +=1                                                              #number of rdv per debris
-            Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
-            srt = sr(t, T, md[i], M, Sro, Vro, Isp)
+            Vro = OptVroeff(t, T, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
+            srt = sreff(t, T, md[i], M, Sro, Vro, Isp)
             t_under_10 = TimeUnderdistm(srt, t, op_dist)                                   #update time between 2-x m
-            D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt,0.2)               #Delta V applied to debris for this rdv
+            D_Vbd = calculate_DV_debriseff(T, t, md[i], t_under_10, srt,0.2)               #Delta V applied to debris for this rdv
             #assert abs(D_Vbd - 12.555)< 10e-5      #checked with hand calculation
             Vd = Vd - D_Vbd 
             rrg = D_Vbdtot 
@@ -300,7 +364,7 @@ def test_operation():
             M = M/(np.exp(np.abs(D_Vm)/(Isp*g0)))                                            
             assert M<ghj and M > (M_dry)
           
-            Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                    
+            Vro = OptVroeff(t, T, md[i], M, Sro, Vros, Isp)                    
             D_V_corr2 = (Vd-Vm) - Vro                                              
             Vm += D_V_corr2 
             ghj = M
@@ -317,7 +381,7 @@ def test_operation():
         #print(f'number of rdv for debris{i+1}: {b}')
 
         if i < debris_amount - 1:  # If not the last debris, calculate transfer velocity 
-            Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                 #not take extra transfer into account for last debris (EOL)
+            Vro = OptVroeff(t, T, md[i], M, Sro, Vros, Isp)                 #not take extra transfer into account for last debris (EOL)
             D_V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro
             Vm += D_V_trans              #add transfer velocity to rdv with new debris 
             D_Vtot = D_Vtot + np.abs(D_V_trans)
