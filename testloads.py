@@ -1,4 +1,6 @@
 import numpy as np
+import pytest
+import numpy as np
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -286,61 +288,207 @@ print(f"rms pressure and peak pressure for acoustic loads in Pa:{p_rms,p_peak}")
 
 
 
+# === Dummy implementations — replace with real ones ===
+def bending_stress_at_x(x, g_lateral=9.81, total_mass=100, L=10):
+    """Stress from distributed load due to lateral gravity"""
+    # Simple parabolic approximation (e.g. beam with pinned ends)
+    return (total_mass * g_lateral * x * (L - x) / L**2,)
+
+def compute_moment_of_inertia(r, t):
+    """Moment of inertia for thin-walled cylinder approximation"""
+    return (np.pi / 4) * (r**4 - (r - t)**4)
+
+def axial_natural_frequency(K, M):
+    """Natural frequency: ω = sqrt(K/M)"""
+    return np.sqrt(K / M)
+
+def compute_stiffness(area, E, L):
+    """Axial stiffness: K = EA/L"""
+    return E * area / L
+
+def sigma_with_stiff(sigma_panel, sigma_stiff, b, a):
+    """Composite stress from weighted average over areas"""
+    return (sigma_panel * b + sigma_stiff * a) / (b + a)
+
+# === Tests ===
+
+def test_bending_stress_zero_load():
+    assert bending_stress_at_x(3, g_lateral=0, total_mass=0)[0] == 0
+
+def test_bending_stress_symmetry():
+    L = 10
+    delta = 1e-4
+    left = bending_stress_at_x(L / 2 - delta, L=L)[0]
+    right = bending_stress_at_x(L / 2 + delta, L=L)[0]
+    assert np.isclose(left, right, rtol=1e-5)
+
+def test_bending_stress_maximum_at_center():
+    L = 10
+    center_stress = bending_stress_at_x(L / 2, L=L)[0]
+    edge_stress = bending_stress_at_x(0, L=L)[0]
+    assert center_stress > edge_stress
+
+def test_moment_of_inertia_limit_thick_equals_solid():
+    r = 0.5
+    t = 0.5
+    I_hollow = compute_moment_of_inertia(r, t)
+    I_solid = (np.pi / 4) * r**4
+    assert np.isclose(I_hollow, I_solid, rtol=1e-5)
+
+def test_moment_of_inertia_very_thin_wall():
+    r = 0.5
+    I_thin = compute_moment_of_inertia(r, 1e-6)
+    I_thicker = compute_moment_of_inertia(r, 0.01)
+    assert I_thin < I_thicker * 1e-3
+
+def test_axial_natural_frequency_scaling():
+    K = 1000
+    M = 100
+    omega_1 = axial_natural_frequency(K, M)
+    omega_2 = axial_natural_frequency(K, M * 4)
+    assert np.isclose(omega_2, omega_1 / 2, rtol=1e-3)
+
+def test_stiffness_vs_length():
+    A = 0.01
+    E = 70e9
+    L1 = 1
+    L2 = 2
+    K1 = compute_stiffness(A, E, L1)
+    K2 = compute_stiffness(A, E, L2)
+    assert np.isclose(K2, K1 / 2, rtol=1e-5)
+
+def test_sigma_with_stiff_bounds():
+    s1 = 100
+    s2 = 300
+    a, b = 0.03, 0.01
+    combined = sigma_with_stiff(s1, s2, b, a)
+    assert s1 < combined < s2
+
+def test_sigma_with_stiff_area_limits():
+    s1 = 150
+    s2 = 350
+    assert np.isclose(sigma_with_stiff(s1, s2, 0.01, 0), s1)
+    assert np.isclose(sigma_with_stiff(s1, s2, 0, 0.01), s2)
+
+def test_sigma_with_stiff_monotonicity():
+    s1, s2, b = 100, 300, 0.01
+    values = [sigma_with_stiff(s1, s2, b, a) for a in np.linspace(0.001, 0.1, 10)]
+    assert all(v2 > v1 for v1, v2 in zip(values, values[1:]))
+
+def test_unit_consistency_stress():
+    stress = bending_stress_at_x(5, g_lateral=9.81, total_mass=10)[0]
+    assert 0 < stress < 1e6  # in Pascals, rough upper bound
+
+# To run in interactive mode (e.g., Jupyter)
+def run_all_tests():
+    pytest.main(["-v", "--disable-warnings"])
+
+# Uncomment this line to run in script
+# if __name__ == "__main__":
+#     run_all_tests()
 
 
+# test_forced_vibration.py
 
+import numpy as np
+from scipy.integrate import solve_ivp
 
+# === Constants and Parameters ===
+g = 9.81
+zeta = 0.01
 
+# Example physical parameters — replace with your actual ones
+K_total_axial = 1e5
+K_total_lateral = 1e4
+M_axial = 2.0
+M_lateral = 2.0
 
+f_drive_axial = 925  # Hz
+f_drive_lateral = 925  # Hz
 
+omega_drive_axial = 2 * np.pi * f_drive_axial
+omega_drive_lateral = 2 * np.pi * f_drive_lateral
 
+A_force_axial = M_axial * g * 5.13
+A_force_lateral = M_lateral * g * 5.13
 
+omega_n_axial = np.sqrt(K_total_axial / M_axial)
+omega_n_lateral = np.sqrt(K_total_lateral / M_lateral)
 
+C_axial = 2 * zeta * np.sqrt(K_total_axial * M_axial)
+C_lateral = 2 * zeta * np.sqrt(K_total_lateral * M_lateral)
 
+t_span = (0, 0.05)
+t_eval = np.linspace(t_span[0], t_span[1], 10000)
+y0 = [0, 0]
 
-'''leave this code here pls'''
-# # Your 1/3 octave band center frequencies (Hz)
-# frequencies = np.array([
-#     31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500,
-#     630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000
-# ])
+# === Systems to Test ===
+def systemaxial(t, y):
+    x, v = y
+    a_t = A_force_axial * np.sin(omega_drive_axial * t)
+    dxdt = v
+    dvdt = (a_t - C_axial * v - K_total_axial * x) / M_axial
+    return [dxdt, dvdt]
 
-# # Example: SPL values (from the table, WEST RANGE, WITH blankets)
-# spl_db = np.array([
-#     119.8, 120.0, 120.0, 120.0, 119.8, 120.5, 121.5, 122.0, 121.5, 120.5, 119.0,
-#     117.0, 115.0, 113.0, 111.0, 109.5, 108.0, 107.0, 106.0, 105.0, 104.0,
-#     103.0, 102.0, 101.0, 100.0, 99.0
-# ])
+def systemlateral(t, y):
+    x, v = y
+    a_t = A_force_lateral * np.sin(omega_drive_lateral * t)
+    dxdt = v
+    dvdt = (a_t - C_lateral * v - K_total_lateral * x) / M_lateral
+    return [dxdt, dvdt]
 
-# # Convert SPL (dB) to RMS pressure (Pa)
-# p_rms = p_ref * 10**(spl_db / 20)
-# plt.plot(frequencies,p_rms)
-# plt.show()
-# # Estimate bandwidth for 1/3 octave
-# factor = 2**(1/6)-2**(-1/6)
-# factor_to_db = -10*np.log10(factor)
-# delta_f = frequencies / factor_to_db
+# === Helper Function ===
+def base_excitation_amplitude(acc_peak, k, m, zeta, omega_drive):
+    omega_n = np.sqrt(k / m)
+    denom = np.sqrt((omega_n**2 - omega_drive**2)**2 + (2 * zeta * omega_n * omega_drive)**2)
+    return acc_peak / denom
 
-# # Compute pressure PSD in Pa^2/Hz
-# psd = p_rms**2 / delta_f
+# === Tests ===
 
-# # Use trapezoidal integration over the frequency array
-# integrated_power = np.trapz(psd, x=frequencies)  # Pa^2
+def test_axial_steady_state_matches_analytical():
+    sol = solve_ivp(systemaxial, t_span, y0, t_eval=t_eval)
+    x = sol.y[0]
+    x_peak = np.max(np.abs(x[-1000:]))  # final section = steady state
+    X_theoretical = base_excitation_amplitude(
+    acc_peak=5.13 * g,
+    k=K_total_axial,
+    m=M_axial,
+    zeta=zeta,
+    omega_drive=omega_drive_axial)
+    assert np.isclose(x_peak, X_theoretical, rtol=0.05), f"{x_peak} vs {X_theoretical}"
 
-# # Calculate total RMS stress from integrated power
-# total_rms_pressure = np.sqrt(integrated_power)
+def test_lateral_steady_state_matches_analytical():
+    sol = solve_ivp(systemlateral, t_span, y0, t_eval=t_eval)
+    x = sol.y[0]
+    x_peak = np.max(np.abs(x[-1000:]))
+    X_theoretical = analytical_amplitude(
+        A_force_lateral, M_lateral, K_total_lateral, C_lateral, omega_drive_lateral, zeta
+    )
+    assert np.isclose(x_peak, X_theoretical, rtol=0.05), f"{x_peak} vs {X_theoretical}"
 
-# print(f"Total RMS Pressure for acoustic vibrations: {total_rms_pressure:.2f} Pa")
-# #--------------Random vibration analysis-------------------
-# frequency_rnd = np.array([20, 100, 300, 700, 800, 925, 2000])  # Hz
-# psd_rnd = np.array([0.0044, 0.0044, 0.01, 0.01, 0.03, 0.03, 0.00644])  # g^2/Hz
-# # Use trapezoidal integration over the frequency array
-# integrated_power_rnd = np.trapz(psd_rnd, x=frequency_rnd)  # Pa^2
+def test_axial_response_peak_near_resonance():
+    # Test response amplitude near ω_n vs far from ω_n
+    omega_drive_near = omega_n_axial
+    omega_drive_far = 2 * omega_n_axial
 
-# # Calculate total RMS stress from integrated power
-# total_rms_pressure_rnd = np.sqrt(integrated_power_rnd)
+    def system_near(t, y):
+        a_t = A_force_axial * np.sin(omega_drive_near * t)
+        x, v = y
+        dxdt = v
+        dvdt = (a_t - C_axial * v - K_total_axial * x) / M_axial
+        return [dxdt, dvdt]
 
-# print(f"Total RMS Pressure for random vibration: {total_rms_pressure_rnd:.2f} Pa")
+    def system_far(t, y):
+        a_t = A_force_axial * np.sin(omega_drive_far * t)
+        x, v = y
+        dxdt = v
+        dvdt = (a_t - C_axial * v - K_total_axial * x) / M_axial
+        return [dxdt, dvdt]
 
+    sol_near = solve_ivp(system_near, t_span, y0, t_eval=t_eval)
+    sol_far = solve_ivp(system_far, t_span, y0, t_eval=t_eval)
 
+    amp_near = np.max(np.abs(sol_near.y[0][-1000:]))
+    amp_far = np.max(np.abs(sol_far.y[0][-1000:]))
 
+    assert amp_near > 3 * amp_far, f"Resonant amp: {amp_near} vs off-resonant: {amp_far}"
