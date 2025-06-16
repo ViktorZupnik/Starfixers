@@ -25,9 +25,9 @@ m_molN2 = 0.028 # [kg/mol]
 
 #ADCS constants
 comp_time = 120 # [s]
-num_rendezvous = 0
-num_slew = 2
-saturation_factor = 0.1   # 0-1
+num_rendezvous = 1
+num_slew = 1
+saturation_factor = 1   # 0-1
 n_desat = 10
 H_sat = 12 # [Nms]
 
@@ -100,13 +100,13 @@ m_gas_desat, V_gas_desat = cgt(t_burn_desat, T_cg, Isp_cg, g)
     
 print("Partial-burn time for safe escape:", t_short, "s")
 print("Total burn time for", n_desat,"desaturations:", n_desat * t_burn_desat, "s")
-print("Total volume of gas:", V_gas_exit + 2 * V_gas_desat, "L")
+print("Total volume of gas:", m_gas_exit, V_gas_exit + 2 * V_gas_desat, "L")
 
 
 
 
 
-slew_rate = 0.5 * np.pi / 200 # [rad/s]
+slew_rate = 0.5 * np.pi / 100 # [rad/s]
 momentum = slew_rate * I_y # [Nm*s]
 
 total_momentum = momentum * num_slew * num_rendezvous * saturation_factor # [Nm*s]
