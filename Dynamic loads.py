@@ -65,49 +65,49 @@ h_stiff = 0.01
 w_stiff = 0.01
 t_stiff = 0.001
 
-def omega_stringer(h, w, t,C15=0.425, C234=4):
-    # Areas of stiffener segments (based on "whwhw" configuration)
-    A24 = h * t        # vertical parts
-    A135 = w * t       # horizontal parts
-    A_stiff = (2 * A24 + 3 * A135)
+def omega_stringer(h, w, t,sidestiff, topbottomstiff,C15=0.425, C234=4):
+    if t > 0.0:
+        # Areas of stiffener segments (based on "whwhw" configuration)
+        A24 = h * t        # vertical parts
+        A135 = w * t       # horizontal parts
+        A_stiff = (2 * A24 + 3 * A135)
 
-    # Crippling stresses
-    sigma_crippling15 = alpha * (C15 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / w)**2)**(1 - n) * sigma_yield
-    sigma_crippling24 = alpha * (C234 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / h)**2)**(1 - n) * sigma_yield
-    sigma_crippling3  = alpha * (C234 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / w)**2)**(1 - n) * sigma_yield
+        # Crippling stresses
+        sigma_crippling15 = alpha * (C15 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / w)**2)**(1 - n) * sigma_yield
+        sigma_crippling24 = alpha * (C234 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / h)**2)**(1 - n) * sigma_yield
+        sigma_crippling3  = alpha * (C234 / sigma_yield * E * np.pi**2 / (12 * (1 - v**2)) * (t / w)**2)**(1 - n) * sigma_yield
 
-    # Combined crippling stress
-    sigma_stiffener= (2 * sigma_crippling15 * A135 + 2 * sigma_crippling24 * A24 + sigma_crippling3 * A135) / A_stiff
-    # Stiffener spacing (assuming 1 stiffener in the center, edges supported)
-    b_side= L_1/3
-    b_topbottom = w_2/2
-    # Buckling of panel width b
-    sigma_newsheet_side = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_side)**2
-    sigma_newsheet_topbottom = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_topbottom)**2
-    # Total effective stress of panel + stiffener
-    sigma_with_stiff_side = (sigma_newsheet_side * b_side * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_side * t_p)
-    sigma_with_stiff_topbottom = (sigma_newsheet_topbottom * b_topbottom * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_topbottom * t_p)
+        # Combined crippling stress
+        sigma_stiffener= (2 * sigma_crippling15 * A135 + 2 * sigma_crippling24 * A24 + sigma_crippling3 * A135) / A_stiff
+    
+        b_side= L_1/(sidestiff+1)  #2 stiffeners on the side
+        b_topbottom = w_2/(topbottomstiff+1) #1 stiffener on the top and bottom
+        # Buckling of panel width b
+        sigma_newsheet_side = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_side)**2
+        sigma_newsheet_topbottom = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_topbottom)**2
+        # Total effective stress of panel + stiffener
+        sigma_with_stiff_side = (sigma_newsheet_side * b_side * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_side * t_p)
+        sigma_with_stiff_topbottom = (sigma_newsheet_topbottom * b_topbottom * t_p + sigma_stiffener * A_stiff) / (A_stiff + b_topbottom * t_p)
+    else: 
+        b_side = L_1
+        b_topbottom = w_2
+        # Total effective stress of panel + stiffener
+        sigma_newsheet_side = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_side)**2
+        sigma_with_stiff_side = sigma_newsheet_side
+        sigma_newsheet_topbottom = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b_topbottom)**2
+        sigma_with_stiff_topbottom = sigma_newsheet_topbottom
+        A_stiff = 0.0
+        sigma_stiffener = 0.0
 
     return A_stiff, sigma_stiffener, sigma_with_stiff_side, sigma_with_stiff_topbottom
-print("omega stiffener new sheet sides (2 stiffeners)", omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6, " MPa"
-      "omega stiffener new sheet top/bottom (1stiffener both directions)", omega_stringer(h_stiff, w_stiff, t_stiff)[3]/1e6, " MPa")
-print(omega_stringer(h_stiff, w_stiff, t_stiff)[0], " m^2", omega_stringer(h_stiff, w_stiff, t_stiff)[1])  # Area of the stiffeners
-# def halfpipe_stringer(r_outer_tanks, r_outer_rod, t_tanks, sigma_yield, E,C=0.366 ):
-#     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)/2  
-#     Fcy = sigma_yield*A_stiff
-#     a = np.sqrt(r_outer_tanks**2-r_outer_rod**2)
-#     tan_alpha = r_outer_rod/(r_outer_tanks-a)
-#     h = tan_alpha*2*r_outer_tanks
-#     b = np.sqrt((h-r_outer_rod)**2 + (r_outer_tanks+a)**2)
-#     b_prime = (h-b)/2
-#     sigma_cr = (C*np.sqrt(Fcy*E)/(b_prime/t_tanks)**0.75)*A_stiff
-#     # Buckling of panel width b
-#     sigma_newsheet = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b)**2
-#     return A_stiff, sigma_cr
-def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E): 
+print("omega stiffener new sheet sides (2 stiffeners)", omega_stringer(h_stiff, w_stiff, t_stiff,2,1)[2]/1e6, " MPa"
+      "omega stiffener new sheet top/bottom (1stiffener both directions)", omega_stringer(h_stiff, w_stiff, t_stiff,2,1)[3]/1e6, " MPa")
+print(omega_stringer(h_stiff, w_stiff, t_stiff,2,1)[0], " m^2", omega_stringer(h_stiff, w_stiff, t_stiff,2,1)[1])  # Area of the stiffeners
+
+def pipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E): 
     A_stiff = np.pi * (r_outer_tanks**2 - (r_outer_tanks - t_tanks)**2)   
     sigma_stiffener = alpha * (2 / sigma_yield * E *0.605*t_tanks/r_outer_tanks)**(1 - n) * sigma_yield
-    b = r_outer_tanks  # Effective width of the panel
+    b = w_2-2*r_outer_tanks  # Effective width of the panel
     # Buckling of panel width b
     sigma_newsheet = 4 * E * np.pi**2 / (12 * (1 - v**2)) * (t_p / b)**2 #reduced width of the panel
     # Total effective stress of panel + stiffener
@@ -115,14 +115,14 @@ def halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E):
 
     return sigma_newsheet, sigma_with_stiff
 
-print("small wall buckling stress: ", halfpipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)[0])
+print("small wall buckling stress: ", pipe_stringer(r_outer_tanks, t_tanks, sigma_yield, E)[0])
 
 #Area calculations of panels, tanks, rod and stiffeners
 r_inner = r_outer_tanks - t_tanks #tank inner radius m
 A_axial = 2*w_1*t_p + 2*w_2*t_p + 4* (2*np.pi*r_outer_tanks - 2*np.pi*r_inner) #area that holds axial loads
 A_support =  np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2) #area of the support beam
 A_lateral = 2*w_2*t_p + 2*L_1*t_p + 2*A_support  #area that holds lateral loads
-A_stiff = omega_stringer(h_stiff, w_stiff, t_stiff)[0]  #area of the stiffeners
+A_stiff = omega_stringer(h_stiff, w_stiff, t_stiff,2,1)[0]  #area of the stiffeners
 
 #defining spring stiffnesses
 K_panel_1 = E*w_1*t_p/L_1     #Single panel stiffness in N/m
@@ -162,12 +162,14 @@ zeta = 0.01  # 1% damping ratio
 omega_n_axial = np.sqrt(K_total_axial / M_axial)  # rad/s
 C_axial= 2 * zeta * np.sqrt(K_total_axial * M_axial)  # Ns/m
 omega_n_lateral = np.sqrt(K_total_lateral/ M_lateral)  # rad/s
+print(omega_n_lateral)
 C_lateral= 2 * zeta * np.sqrt(K_total_lateral * M_lateral)  # Ns/m
 # === Forcing: 1g sinusoidal acceleration at 100 Hz ===
 f_drive_axial = 925#100  # Hz
-f_drive_lateral = 925#100  # Hz
+f_drive_lateral =925#100  # Hz
 omega_drive_axial = 2 * np.pi * f_drive_axial  # rad/s
 omega_drive_lateral = 2 * np.pi * f_drive_lateral  # rad/s
+
 A_force_axial = M_axial * g*5.13  # N
 A_force_lateral = M_lateral * g*5.13  # N
 
@@ -186,7 +188,7 @@ def systemlateral(t, y):
     x, v = y  # displacement and velocity
     a_t = A_force_lateral * np.sin(omega_drive_lateral * t)
     dxdt = v
-    dvdt = (a_t - C_lateral* v - K_total_lateral * x) / M_axial
+    dvdt = (a_t - C_lateral* v - K_total_lateral * x) / M_lateral
     return [dxdt, dvdt]
 
 # Initial conditions: [displacement, velocity]
@@ -211,7 +213,7 @@ plt.figure(figsize=(10, 5))
 plt.plot(sol_lateral.t*1000, sol_lateral.y[0], label='Displacement (m)', color='blue')
 plt.xlabel('Time (ms)')
 plt.ylabel('Lateral Displacement (m)')
-plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz - Bottom Clamped')
+plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz - side Clamped')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
@@ -283,7 +285,7 @@ for name, (a, b) in walls_lateral.items():
     b_eff = min(a, b)  # Buckling depends on shorter dimension
     sigma_cr = sigma_cr_plate(E, nu, t_p, b_eff, k, SF)
     print(f"{name} wall: {sigma_cr / 1e6:.2f} MPa")
-print(f"Buckling stress of a wall with 1 stiffener:{omega_stringer(h_stiff, w_stiff, t_stiff)[2]/1e6:.2f} MPa")
+print(f"Buckling stress of a wall with 1 stiffener:{omega_stringer(h_stiff, w_stiff, t_stiff,2,1)[2]/1e6:.2f} MPa")
 
 #------ ACOUSTIC------
 # Reference pressure
