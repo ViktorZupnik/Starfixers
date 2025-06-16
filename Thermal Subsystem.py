@@ -52,16 +52,14 @@ sigma = 5.67e-8  # W/m²K⁴
 mass = 1000       # kg (aluminum)
 cp = 900          # J/kg·K (aluminum spec. heat)
 ext_area = A_tot   # m² (cube side ~1.15 m for 1000 kg Al)
-U_MLI = 0.5           # W/m²K (effective heat transfer coeff)
+U_MLI = 0.5          # W/m²K (effective heat transfer coeff)
 
 
 
 T_inner11 = Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sigma, A_emitted)- Q_internal / (U_MLI * A_emitted)
-T_inner12 = Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sigma, A_emitted)+ Q_internal / (U_MLI * A_emitted)
-print(f"Inner surface temperature in sunlight: {T_inner11:.2f} K", T_inner12)
-T_inner21 = Eclipse_temperature(Q_IR, Q_internal, epsilon, sigma, A_emitted) - Q_internal / (U_MLI * A_emitted)
+print(f"Inner surface temperature in sunlight: {T_inner11:.2f} K")
 T_inner22 = Eclipse_temperature(Q_IR, Q_internal, epsilon, sigma, A_emitted) + Q_internal / (U_MLI * A_emitted)
-print(f"Inner surface temperature in eclipse: {T_inner21:.2f} K", T_inner22)
+print(f"Inner surface temperature in eclipse: {T_inner22:.2f} K")
 
 # Environment (600 km LEO)
 T_eclipse = Eclipse_temperature(Q_IR, Q_internal, epsilon, sigma, A_emitted)       # K
@@ -71,21 +69,21 @@ orbit_period = 96 * 60   # seconds (96 min)
 eclipse_frac = 0.375    # 35% of orbit in eclipse
 
 
-# Time-stepping simulation (1 orbit)
-time = np.linspace(0, orbit_period, 1000)
-T_ext = np.where(time < eclipse_frac * orbit_period, T_eclipse, T_sunlight)
-T_internal = np.ones_like(time) * 290  # Initial guess
+# # Time-stepping simulation (1 orbit)
+# time = np.linspace(0, orbit_period, 1000)
+# T_ext = np.where(time < eclipse_frac * orbit_period, T_eclipse, T_sunlight)
+# T_internal = np.ones_like(time) * 290  # Initial guess
 
-for i in range(1, len(time)):
-    dt = time[i] - time[i-1]
-    Q_MLI = U_MLI * ext_area * (T_ext[i] - T_internal[i-1])
-    dT = (Q_MLI + Q_internal) * dt / (mass * cp)
-    T_internal[i] = T_internal[i-1] + dT
+# for i in range(1, len(time)):
+#     dt = time[i] - time[i-1]
+#     Q_MLI = U_MLI * ext_area * (T_ext[i] - T_internal[i-1])
+#     dT = (Q_MLI + Q_internal) * dt / (mass * cp)
+#     T_internal[i] = T_internal[i-1] + dT
 
-# Results
-min_T = np.min(T_internal)
-max_T = np.max(T_internal)
-#print(f"Internal temp range: {min_T:.1f} K to {max_T:.1f} K")
+# # Results
+# min_T = np.min(T_internal)
+# max_T = np.max(T_internal)
+# #print(f"Internal temp range: {min_T:.1f} K to {max_T:.1f} K")
 
 a1 = [0.65, 0.16, 0.2,0.35,0.27]
 e1 = [0.82, 0.03, 0.15,0.79,0.82]
@@ -100,6 +98,21 @@ for alpha, epsilon in alpha_epsilon_pairs:
     T_sun = Sunside_temperature(Q_sun, Q_albedo, Q_IR, Q_internal, epsilon, sigma, A_emitted)
 
     print(f"{alpha:5.2f} {epsilon:5.2f} {T_eclipse:15.2f} {T_sun:15.2f}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # # Optional: Plot
 # plt.plot(time / 60, T_internal)
