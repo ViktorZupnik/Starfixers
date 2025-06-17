@@ -5,9 +5,6 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 
-
-
-
 g = 9.80665
 E = 71.7*10**9  # Elastic module in Pa
 def bending_stress_at_x( #https://www.engineeringtoolbox.com/beams-fixed-both-ends-support-loads-deflection-d_809.html
@@ -41,8 +38,8 @@ print ("bending stress in the middle of a tank: ", bending_stress_at_x(1.065/2, 
 
 g_axial = 8.5
 g_lateral = 3
-#M_fuel_tank = 95.474+15.711       #Propellant tank mass (fueld) in kg
-M_fuel_tank = 141.8+20.76
+M_fuel_tank = 95.474+15.711       #Propellant tank mass (fueld) in kg
+#M_fuel_tank = 141.8+20.76
 alpha = 0.8
 v = 0.334
 n = 0.6
@@ -50,19 +47,19 @@ E = 71.7*10**9  # Elastic module in Pa
 sigma_yield = 503 * 10**6  # Yield strength in Pa
 M = 100                 #Mass supported by the side panles at launch
 t_p = 0.003              #Panel thickness in m
-#w_1 = 1.00               #Panel 1 width in m
-w_1 = 1.01
-#L_1 = 0.823                #Panel 1 length in m (height)
-L_1 =0.923
-#w_2 = 1.00                 #Panel 2 width in m
-w_2 =1.01
+w_1 = 1.00               #Panel 1 width in m
+#w_1 = 1.01
+L_1 = 0.823                #Panel 1 length in m (height)
+#L_1 =0.923
+w_2 = 1.00                 #Panel 2 width in m
+#w_2 =1.01
 L_2 = L_1                 #Panel 2 length in m (height)
 r_outer_rod = 0.02          #Outer radius of the support rod in m
 t_rod = 0.002
 print(L_1*w_1*4+w_1*w_2*2)
 rho_panels = 2810
-#r_outer_tanks = 0.412/2
-r_outer_tanks = 0.365/2
+r_outer_tanks = 0.412/2
+#r_outer_tanks = 0.365/2
 t_tanks = 0.003
 
 #stiffener dimensions
@@ -142,8 +139,8 @@ K_Tanks_critical = (3*E*(np.pi/4*(r_outer_tanks**4-(r_outer_tanks-t_tanks)**4))/
 K_rod = E*(np.pi*(r_outer_rod**2-(r_outer_rod-t_rod)**2))/ (L_1)*4
 K_stiff = E*A_stiff/w_1
 K_total_axial = K_panels_axial + K_Tanks  #Total stiffness in N/m
-K_total_lateral = K_panels_lateral +2*K_rod +6*K_stiff  #Total stiffness in N/m
-#K_total_lateral = 2* K_panels_critical + 4*K_Tanks_critical
+K_total_lateral1 = K_panels_lateral +2*K_rod +6*K_stiff  #Total stiffness in N/m   #sides+bottom clamped lateral stiffness
+K_total_lateral2 = 2* K_panels_critical + 4*K_Tanks_critical     #bottom clamped lateral stiffness
 
 M_t_full = 150 #full fuel tank mass kg
 M_rod = A_support*(w_1-4*r_outer_tanks)*rho_panels
@@ -166,9 +163,10 @@ print("The critical stress in lateral direction is: ", critical_stress_lat, " Pa
 zeta = 0.01  # 1% damping ratio
 omega_n_axial = np.sqrt(K_total_axial / M_axial)  # rad/s
 C_axial= 2 * zeta * np.sqrt(K_total_axial * M_axial)  # Ns/m
-omega_n_lateral = np.sqrt(K_total_lateral/ M_lateral)  # rad/s
+omega_n_lateral = np.sqrt(K_total_lateral1/ M_lateral)  # rad/s
 print(omega_n_lateral)
-C_lateral= 2 * zeta * np.sqrt(K_total_lateral * M_lateral)  # Ns/m
+C_lateral1= 2 * zeta * np.sqrt(K_total_lateral1 * M_lateral)  # Ns/m
+C_lateral2= 2 * zeta * np.sqrt(K_total_lateral2* M_axial)  # Ns/m
 # === Forcing: 1g sinusoidal acceleration at 100 Hz ===
 f_drive_axial = 925#100  # Hz
 f_drive_lateral =925#100  # Hz
@@ -189,20 +187,27 @@ def systemaxial(t, y):
     dvdt = (a_t - C_axial * v - K_total_axial * x) / M_axial
     return [dxdt, dvdt]
 
-def systemlateral(t, y):
+def systemlateral1(t, y):
     x, v = y  # displacement and velocity
     a_t = A_force_lateral * np.sin(omega_drive_lateral * t)
     dxdt = v
-    dvdt = (a_t - C_lateral* v - K_total_lateral * x) / M_lateral
+    dvdt = (a_t - C_lateral1* v - K_total_lateral1 * x) / M_lateral
     return [dxdt, dvdt]
+def systemlateral2(t, y):
+    x, v = y  # displacement and velocity
+    a_t = A_force_lateral * np.sin(omega_drive_lateral * t)
+    dxdt = v
+    dvdt = (a_t - C_lateral2* v - K_total_lateral2 * x) / M_axial
+    return [dxdt, dvdt]
+
 
 # Initial conditions: [displacement, velocity]
 y0 = [0, 0]
 
 # Integrate
 sol_axial = solve_ivp(systemaxial, t_span, y0, t_eval=t_eval, method='RK45')
-sol_lateral = solve_ivp(systemlateral, t_span, y0, t_eval=t_eval, method='RK45')
-
+sol_lateral1 = solve_ivp(systemlateral1, t_span, y0, t_eval=t_eval, method='RK45')
+sol_lateral2 = solve_ivp(systemlateral2, t_span, y0, t_eval=t_eval, method='RK45')
 # === Plot Results Axial ===
 plt.figure(figsize=(10, 5))
 plt.plot(sol_axial.t*1000, sol_axial.y[0], label='Displacement (m)', color='blue')
@@ -213,19 +218,29 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# === Plot Results Lateral ===
+# === Plot Results Lateral sides clamped ===
 plt.figure(figsize=(10, 5))
-plt.plot(sol_lateral.t*1000, sol_lateral.y[0], label='Displacement (m)', color='blue')
+plt.plot(sol_lateral1.t*1000, sol_lateral1.y[0], label='Displacement (m)', color='blue')
 plt.xlabel('Time (ms)')
 plt.ylabel('Lateral Displacement (m)')
-plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz - side Clamped')
+plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz - Side Clamped')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# === Plot Results Lateral sides clamped ===
+plt.figure(figsize=(10, 5))
+plt.plot(sol_lateral2.t*1000, sol_lateral2.y[0], label='Displacement (m)', color='blue')
+plt.xlabel('Time (ms)')
+plt.ylabel('Lateral Displacement (m)')
+plt.title('Lateral Displacement Response to 5.13g Acceleration at 925 Hz - Bottom Clamped')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
 
 
 max_disp_axial = np.max(np.abs(sol_axial.y[0]))
-max_disp_lateral = np.max(np.abs(sol_lateral.y[0]))
+max_disp_lateral = np.max(np.abs(sol_lateral1.y[0]))
 
 print(f"Maximum Axial Displacement: {max_disp_axial:.6e} m")
 print(f"Maximum Lateral Displacement: {max_disp_lateral:.6e} m")
