@@ -1,3 +1,4 @@
+"Run the code to see the tests that were performed on the Loads.py code"
 import numpy as np
 import pytest
 import numpy as np
@@ -5,9 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-
-
-
 
 
 g = 9.80665
