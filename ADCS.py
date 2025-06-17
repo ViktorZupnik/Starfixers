@@ -3,7 +3,7 @@ import numpy as np
 #Spacecraft constants
 I_x = 201.9317163 # [kg*m2]
 I_y = 131.4344193 # [kg*m2]
-M = 1050 # [kg]
+M = 646 # [kg]
 l = 1 # [m]
 
 #Thruster constants
@@ -106,7 +106,7 @@ print("Total volume of gas:", m_gas_exit, V_gas_exit + 2 * V_gas_desat, "L")
 
 
 
-slew_rate = 0.5 * np.pi / 100 # [rad/s]
+slew_rate = 0.5 * np.pi / 200 # [rad/s]
 momentum = slew_rate * I_y # [Nm*s]
 
 total_momentum = momentum * num_slew * num_rendezvous * saturation_factor # [Nm*s]
