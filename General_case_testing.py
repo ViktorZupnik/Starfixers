@@ -1,5 +1,5 @@
 
-"version 2"
+"Run the code to see the tests that were performed on the General_Case_Orbital.py code"
 import numpy as np
 import matplotlib.pyplot as plt
 from efficiency import calculate_efficiency
@@ -407,3 +407,8 @@ def test_operation():
     fuel_mass = Mi - M                         
     print(f'fuel mass:{fuel_mass}', f'and dry mass is {M}' )
     print (bs)
+
+if __name__ == "__main__":
+    import sys
+    import pytest
+    sys.exit(pytest.main([__file__]))
