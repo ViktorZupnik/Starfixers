@@ -2,7 +2,7 @@
 "Run the code to see the tests that were performed on the General_Case_Orbital.py code"
 import numpy as np
 import matplotlib.pyplot as plt
-from efficiency import calculate_efficiency
+from Efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 

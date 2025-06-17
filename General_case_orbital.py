@@ -1,7 +1,7 @@
 "version 2"
 import numpy as np
 import matplotlib.pyplot as plt
-from efficiency import calculate_efficiency
+from Efficiency import calculate_efficiency
 
 # Constants
 #Ts = np.linspace(100, 1000, 50)  # Test multiple thrusts for thrust optimization 
