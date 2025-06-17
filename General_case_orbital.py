@@ -153,7 +153,8 @@ for i in range(debris_amount):   #10 debris
     b = 0                                                                   
     while D_Vbdtot <= 60.58:                                                   #stop the while loop when delta V applied to debris is enough to deorbit
         b +=1                                                              #number of rdv per debris
-        Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                      #update Vro with new mass
+        Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)   
+        print(Vro)                   #update Vro with new mass
         srt = sr(t, T, md[i], M, Sro, Vro, Isp)
         t_under_10 = TimeUnderdistm(srt, t, op_dist)                                   #update time between 2-x m
         D_Vbd = calculate_DV_debris(T, t, md[i], t_under_10, srt)               #Delta V applied to debris for this rdv
@@ -174,6 +175,7 @@ for i in range(debris_amount):   #10 debris
         if M < M_dry:  
             print("problem")                                           #update mass
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                    #update Vro
+        print(Vro)
         D_V_corr2 = (Vd-Vm) - Vro                                              #correction to achieve desired relative velocity
         Vm += D_V_corr2 
         M = M/(np.exp(np.abs(D_V_corr2)/(Isp*g0))) 
@@ -187,6 +189,7 @@ for i in range(debris_amount):   #10 debris
 
     if i < debris_amount - 1:  # If not the last debris, calculate transfer velocity 
         Vro = OptVro(t, T, md[i], M, Sro, Vros, Isp)                 #not take extra transfer into account for last debris (EOL)
+        print(Vro)
         D_V_trans = np.sqrt(3.986*10**14/((600+6371)*1000)) -Vm -Vro
         Vm += D_V_trans              #add transfer velocity to rdv with new debris 
         D_Vtot = D_Vtot + np.abs(D_V_trans)
