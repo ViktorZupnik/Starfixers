@@ -272,10 +272,10 @@ def plot_side_view(D, H, depthwidth):
 if __name__ == "__main__":
     # Things to input
     R = 0.5  # D/H ratio, choose yourself
-    capacity = 163.3730938 # in L, input the necessary tank capacity
-    t = 0.002  # in m, input the necessary tank thickness
-    rho = 4430  # in kg/m^3, input the necessary tank material density; 4430 for ti6al4v
-    L = 0.312 # in m, input the free space length; to fit the ADCS in the middle "column" of the satellite
+    capacity = 73.05 # in L, input the necessary tank capacity
+    t = 0.003  # in m, input the necessary tank thickness
+    rho = 2810  # in kg/m^3, input the necessary tank material density; 4430 for ti6al4v
+    L = 0.42 # in m, input the free space length; to fit the ADCS in the middle "column" of the satellite
 
     # Things that are calculated
     volume = calculate_tank_volume(capacity) # in L, input the necessary tank capacity
