@@ -1,8 +1,8 @@
 import numpy as np
 
 #Spacecraft constants
-I_x = 201.9317163 # [kg*m2]
-I_y = 131.4344193 # [kg*m2]
+I_x = 158.90986 # [kg*m2]
+I_y = 88.41256599 # [kg*m2]
 M = 646 # [kg]
 l = 1 # [m]
 
